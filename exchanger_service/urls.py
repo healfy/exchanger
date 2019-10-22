@@ -15,7 +15,14 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from django.urls import include
+from rest_framework import routers
+from exchanger.rest_api import views
+
+router = routers.DefaultRouter()
+router.register('exchange', views.ExchangeHistoryViewSet, base_name='exchange')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/', include(router.urls))
 ]

@@ -61,7 +61,7 @@ class TransactionBase(Base):
                                         blank=True,
                                         db_index=True)
     currency = models.CharField(verbose_name='Transaction currency',
-                                max_length=30,)
+                                max_length=30)
 
     def confirm(self,
                 status: int,
@@ -136,6 +136,10 @@ class ExchangeHistory(Base):
     status = models.SmallIntegerField(choices=EXCHANGE_STATUTES,
                                       default=ACTIVE,
                                       db_index=True)
+
+    amount = models.DecimalField(verbose_name='Exchange amount',
+                                 max_digits=16,
+                                 decimal_places=5)
 
     def __repr__(self):
         return f'History id: {self.id} bound with user {self.user_email}'
