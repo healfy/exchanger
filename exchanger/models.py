@@ -27,12 +27,12 @@ class TransactionBase(Base):
     SUCCESS, NOT_FOUND, FAILED, CONFIRMED, PENDING, NEW = 1, 2, 3, 4, 5, 6
 
     STATUTES = (
-        SUCCESS, 'SUCCESS',
-        NOT_FOUND, 'NOT_FOUND',
-        FAILED, 'FAILED',
-        CONFIRMED, 'CONFIRMED',
-        PENDING, 'PENDING',
-        NEW, 'NEW',
+        (SUCCESS, 'SUCCESS'),
+        (NOT_FOUND, 'NOT_FOUND'),
+        (FAILED, 'FAILED'),
+        (CONFIRMED, 'CONFIRMED'),
+        (PENDING, 'PENDING'),
+        (NEW, 'NEW'),
     )
 
     trx_hash = models.CharField(verbose_name='Transaction hash',
@@ -45,10 +45,12 @@ class TransactionBase(Base):
                                 decimal_places=5)
 
     to_address = models.CharField(verbose_name='Address to which the '
-                                               'currency will transfer')
+                                               'currency will transfer',
+                                  max_length=100)
 
     from_address = models.CharField(verbose_name='Address from the '
-                                                 'currency will transfer')
+                                                 'currency will transfer',
+                                    max_length=100)
 
     status = models.SmallIntegerField(verbose_name='Transaction status',
                                       choices=STATUTES,
@@ -102,8 +104,8 @@ class ExchangeHistory(Base):
     ACTIVE, FINISHED = 1, 2
 
     EXCHANGE_STATUTES = (
-        ACTIVE, 'Active',
-        FINISHED, 'Finished',
+        (ACTIVE, 'Active'),
+        (FINISHED, 'Finished'),
     )
 
     user_email = models.EmailField(verbose_name='Email of user')
@@ -123,15 +125,15 @@ class ExchangeHistory(Base):
                                      max_digits=16,
                                      decimal_places=8)
 
-    transaction_input = models.ForeignKey(InputTransaction,
-                                          null=True,
-                                          blank=True,
-                                          on_delete=models.SET_NULL)
+    transaction_input = models.OneToOneField(InputTransaction,
+                                             null=True,
+                                             blank=True,
+                                             on_delete=models.SET_NULL)
 
-    transaction_output = models.ForeignKey(OutPutTransaction,
-                                           null=True,
-                                           blank=True,
-                                           on_delete=models.SET_NULL)
+    transaction_output = models.OneToOneField(OutPutTransaction,
+                                              null=True,
+                                              blank=True,
+                                              on_delete=models.SET_NULL)
 
     status = models.SmallIntegerField(choices=EXCHANGE_STATUTES,
                                       default=ACTIVE,
@@ -147,3 +149,23 @@ class ExchangeHistory(Base):
     class Meta:
         verbose_name = 'Exchange History'
         verbose_name_plural = 'Exchange Histories'
+
+
+class PlatformWallet(Base):
+
+    address = models.CharField(verbose_name='Wallet address',
+                               max_length=100,
+                               unique=True)
+
+    currency = models.CharField(verbose_name='Wallet currency_slug',
+                                max_length=40)
+
+    is_active = models.BooleanField(verbose_name='Is active wallet',
+                                    default=True)
+
+    def __repr__(self):
+        return f'Wallet id: {self.id} currency {self.currency}'
+
+    class Meta:
+        verbose_name = 'Platform Wallet'
+        verbose_name_plural = 'Platform Wallets'

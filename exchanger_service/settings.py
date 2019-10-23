@@ -113,7 +113,13 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.exchanger.password_validation.NumericPasswordValidator',
     },
 ]
-GRPC_TIMEOUT = 30  # default timeout for grpc requests
+GRPC_TIMEOUT = 10  # default timeout for grpc requests
+REMOTE_OPERATION_ATTEMPT_NUMBER = 3
+ONE_DAY_IN_SECONDS = 60 * 60 * 24
+# gateway addresses
+
+WALLETS_GW_ADDRESS = ''
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.2/topics/i18n/
@@ -193,4 +199,4 @@ except Exception as e:
     print("Local settings file is not defined or is not correct. \n\
             Please create local_settings.py file in settings folder")
     print(e)
-    exit()
+

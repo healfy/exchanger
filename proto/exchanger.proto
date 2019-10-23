@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+import "google/api/annotations.proto";
+import "protoc-gen-swagger/options/annotations.proto";
+
+package exchanger;
+
+
+service ExchangerService {
+    rpc Healthz(HealthzRequest) returns (HealthzResponse) {}
+}
+
+enum ResponseStatus {
+    NOT_SET = 0;
+    SUCCESS = 1;
+    ERROR = 2;
+    INVALID_REQUEST = 3;
+}
+
+message ResponseHeader {
+    ResponseStatus status = 1;
+    string description = 2;
+}
+
+message HealthzRequest {};
+
+
+message HealthzResponse {
+    ResponseHeader header = 1;
+}
