@@ -18,3 +18,5 @@ google-auth==1.6.3
 google-auth-httplib2==0.0.3
 google-cloud-core==0.28.1
 googleapis-common-protos==1.6.0
+drf-yasg
+drf-yasg[validation]

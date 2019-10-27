@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'exchanger.apps.ExchangerConfig',
     'rest_framework',
+    'drf_yasg',
 ]
 
 MIDDLEWARE = [

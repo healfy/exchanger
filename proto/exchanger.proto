@@ -12,6 +12,18 @@ service ExchangerService {
     rpc Healthz(HealthzRequest) returns (HealthzResponse) {}
 }
 
+enum ExchangeStatutes{
+    UNKNOWN = 0;
+    NEW = 1;
+    WAITING_DEPOSIT = 2;
+    INSUFFICIENT_DEPOSIT = 3;
+    DEPOSIT_PAID = 4;
+    CREATING_OUTGOING_TRANSFER = 5;
+    OUTGOING_RUNNING = 6;
+    CLOSED = 7;
+    FAILED = 8;
+}
+
 enum ResponseStatus {
     NOT_SET = 0;
     SUCCESS = 1;

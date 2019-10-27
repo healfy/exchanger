@@ -25,10 +25,61 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='exchanger',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x0f\x65xchanger.proto\x12\texchanger\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1egoogle/protobuf/duration.proto\x1a\x1cgoogle/api/annotations.proto\x1a,protoc-gen-swagger/options/annotations.proto\"P\n\x0eResponseHeader\x12)\n\x06status\x18\x01 \x01(\x0e\x32\x19.exchanger.ResponseStatus\x12\x13\n\x0b\x64\x65scription\x18\x02 \x01(\t\"\x10\n\x0eHealthzRequest\"<\n\x0fHealthzResponse\x12)\n\x06header\x18\x01 \x01(\x0b\x32\x19.exchanger.ResponseHeader*J\n\x0eResponseStatus\x12\x0b\n\x07NOT_SET\x10\x00\x12\x0b\n\x07SUCCESS\x10\x01\x12\t\n\x05\x45RROR\x10\x02\x12\x13\n\x0fINVALID_REQUEST\x10\x03\x32V\n\x10\x45xchangerService\x12\x42\n\x07Healthz\x12\x19.exchanger.HealthzRequest\x1a\x1a.exchanger.HealthzResponse\"\x00\x62\x06proto3')
+  serialized_pb=_b('\n\x0f\x65xchanger.proto\x12\texchanger\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1egoogle/protobuf/duration.proto\x1a\x1cgoogle/api/annotations.proto\x1a,protoc-gen-swagger/options/annotations.proto\"P\n\x0eResponseHeader\x12)\n\x06status\x18\x01 \x01(\x0e\x32\x19.exchanger.ResponseStatus\x12\x13\n\x0b\x64\x65scription\x18\x02 \x01(\t\"\x10\n\x0eHealthzRequest\"<\n\x0fHealthzResponse\x12)\n\x06header\x18\x01 \x01(\x0b\x32\x19.exchanger.ResponseHeader*\xb7\x01\n\x10\x45xchangeStatutes\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x07\n\x03NEW\x10\x01\x12\x13\n\x0fWAITING_DEPOSIT\x10\x02\x12\x18\n\x14INSUFFICIENT_DEPOSIT\x10\x03\x12\x10\n\x0c\x44\x45POSIT_PAID\x10\x04\x12\x1e\n\x1a\x43REATING_OUTGOING_TRANSFER\x10\x05\x12\x14\n\x10OUTGOING_RUNNING\x10\x06\x12\n\n\x06\x43LOSED\x10\x07\x12\n\n\x06\x46\x41ILED\x10\x08*J\n\x0eResponseStatus\x12\x0b\n\x07NOT_SET\x10\x00\x12\x0b\n\x07SUCCESS\x10\x01\x12\t\n\x05\x45RROR\x10\x02\x12\x13\n\x0fINVALID_REQUEST\x10\x03\x32V\n\x10\x45xchangerService\x12\x42\n\x07Healthz\x12\x19.exchanger.HealthzRequest\x1a\x1a.exchanger.HealthzResponse\"\x00\x62\x06proto3')
   ,
   dependencies=[google_dot_protobuf_dot_timestamp__pb2.DESCRIPTOR,google_dot_protobuf_dot_duration__pb2.DESCRIPTOR,google_dot_api_dot_annotations__pb2.DESCRIPTOR,protoc__gen__swagger_dot_options_dot_annotations__pb2.DESCRIPTOR,])
 
+_EXCHANGESTATUTES = _descriptor.EnumDescriptor(
+  name='ExchangeStatutes',
+  full_name='exchanger.ExchangeStatutes',
+  filename=None,
+  file=DESCRIPTOR,
+  values=[
+    _descriptor.EnumValueDescriptor(
+      name='UNKNOWN', index=0, number=0,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='NEW', index=1, number=1,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='WAITING_DEPOSIT', index=2, number=2,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='INSUFFICIENT_DEPOSIT', index=3, number=3,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='DEPOSIT_PAID', index=4, number=4,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='CREATING_OUTGOING_TRANSFER', index=5, number=5,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='OUTGOING_RUNNING', index=6, number=6,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='CLOSED', index=7, number=7,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='FAILED', index=8, number=8,
+      serialized_options=None,
+      type=None),
+  ],
+  containing_type=None,
+  serialized_options=None,
+  serialized_start=334,
+  serialized_end=517,
+)
+_sym_db.RegisterEnumDescriptor(_EXCHANGESTATUTES)
+
+ExchangeStatutes = enum_type_wrapper.EnumTypeWrapper(_EXCHANGESTATUTES)
 _RESPONSESTATUS = _descriptor.EnumDescriptor(
   name='ResponseStatus',
   full_name='exchanger.ResponseStatus',
@@ -54,12 +105,21 @@ _RESPONSESTATUS = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=333,
-  serialized_end=407,
+  serialized_start=519,
+  serialized_end=593,
 )
 _sym_db.RegisterEnumDescriptor(_RESPONSESTATUS)
 
 ResponseStatus = enum_type_wrapper.EnumTypeWrapper(_RESPONSESTATUS)
+UNKNOWN = 0
+NEW = 1
+WAITING_DEPOSIT = 2
+INSUFFICIENT_DEPOSIT = 3
+DEPOSIT_PAID = 4
+CREATING_OUTGOING_TRANSFER = 5
+OUTGOING_RUNNING = 6
+CLOSED = 7
+FAILED = 8
 NOT_SET = 0
 SUCCESS = 1
 ERROR = 2
@@ -164,6 +224,7 @@ _HEALTHZRESPONSE.fields_by_name['header'].message_type = _RESPONSEHEADER
 DESCRIPTOR.message_types_by_name['ResponseHeader'] = _RESPONSEHEADER
 DESCRIPTOR.message_types_by_name['HealthzRequest'] = _HEALTHZREQUEST
 DESCRIPTOR.message_types_by_name['HealthzResponse'] = _HEALTHZRESPONSE
+DESCRIPTOR.enum_types_by_name['ExchangeStatutes'] = _EXCHANGESTATUTES
 DESCRIPTOR.enum_types_by_name['ResponseStatus'] = _RESPONSESTATUS
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
@@ -196,8 +257,8 @@ _EXCHANGERSERVICE = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=None,
-  serialized_start=409,
-  serialized_end=495,
+  serialized_start=595,
+  serialized_end=681,
   methods=[
   _descriptor.MethodDescriptor(
     name='Healthz',

@@ -20,6 +20,7 @@ class WalletsServiceGateway(BaseGateway):
                           external_id: int,
                           address: str,
                           currency_slug: str,
+                          expected_address: str,
                           is_platform: bool = True) -> Response:
         """
         Method that send request to service wallet to start monitoring
@@ -28,15 +29,17 @@ class WalletsServiceGateway(BaseGateway):
         :param address: wallet address from blockchain
         :param is_platform: feature by which wallets differ, default false
         :param currency_slug: currency slug of  wallet
+        :param expected_address: address from we are expect transfer
         """
 
-        request_message = self.MODULE.MonitoringRequest(
+        request_message = self.MODULE.PlatformWLTMonitoringRequest(
             wallet=self.MODULE.Wallet(
                 external_id=external_id,
                 address=address,
                 is_platform=is_platform,
                 currency_slug=currency_slug,
-            )
+            ),
+            expected_address=expected_address
         )
 
         with grpc.insecure_channel(self.GW_ADDRESS) as channel:
@@ -44,7 +47,7 @@ class WalletsServiceGateway(BaseGateway):
 
             operation_success, result = self._base_request(
                 request_message,
-                client.StartMonitoring,
+                client.StartMonitoringPlatformWallet,
             )
         if not operation_success:
             return Response(result, HTTP_503_SERVICE_UNAVAILABLE)

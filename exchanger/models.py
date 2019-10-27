@@ -22,6 +22,28 @@ class Base(models.Model):
         ordering = ('-created_at',)
 
 
+class Currency(Base):
+
+    name = models.CharField(verbose_name='Currency name',
+                            max_length=20)
+
+    slug = models.CharField(verbose_name='Currency slug',
+                            max_length=20)
+
+    active = models.BooleanField(verbose_name='it is used',
+                                 default=True)
+
+    is_token = models.BooleanField(verbose_name='Is token currency',
+                                   default=False)
+
+    class Meta:
+        verbose_name = 'Currency'
+        verbose_name_plural = 'Currencies'
+
+    def __repr__(self):
+        return f'Currency ({self.id}, {self.name})'
+
+
 class TransactionBase(Base):
 
     SUCCESS, NOT_FOUND, FAILED, CONFIRMED, PENDING, NEW = 1, 2, 3, 4, 5, 6
@@ -62,8 +84,11 @@ class TransactionBase(Base):
                                         null=True,
                                         blank=True,
                                         db_index=True)
-    currency = models.CharField(verbose_name='Transaction currency',
-                                max_length=30)
+    currency = models.OneToOneField(Currency,
+                                    verbose_name='Transaction currency',
+                                    on_delete=models.CASCADE,
+                                    related_name='%(app_label)s_%(class)s_'
+                                                 'related')
 
     def confirm(self,
                 status: int,
@@ -99,13 +124,50 @@ class OutPutTransaction(TransactionBase):
         return f'OutPutTransaction ({self.id}, {self.currency})'
 
 
+class PlatformWallet(Base):
+
+    address = models.CharField(verbose_name='Wallet address',
+                               max_length=100,
+                               unique=True)
+
+    currency = models.ForeignKey(Currency,
+                                 verbose_name='Wallet currency_slug',
+                                 on_delete=models.CASCADE,
+                                 related_name='wallets')
+
+    is_active = models.BooleanField(verbose_name='Is active wallet',
+                                    default=True)
+
+    def __repr__(self):
+        return f'Wallet id: {self.id} currency {self.currency}'
+
+    class Meta:
+        verbose_name = 'Platform Wallet'
+        verbose_name_plural = 'Platform Wallets'
+
+
 class ExchangeHistory(Base):
 
-    ACTIVE, FINISHED = 1, 2
+    UNKNOWN = 0
+    NEW = 1
+    WAITING_DEPOSIT = 2
+    INSUFFICIENT_DEPOSIT = 3
+    DEPOSIT_PAID = 4
+    CREATING_OUTGOING_TRANSFER = 5
+    OUTGOING_RUNNING = 6
+    CLOSED = 7
+    FAILED = 8
 
     EXCHANGE_STATUTES = (
-        (ACTIVE, 'Active'),
-        (FINISHED, 'Finished'),
+        (UNKNOWN, 'UNKNOWN STATUS'),
+        (NEW, 'NEW'),
+        (WAITING_DEPOSIT, 'WAITING MONEY FROM USER'),
+        (INSUFFICIENT_DEPOSIT, 'MONEY TRANSFER IS INSUFFICIENT'),
+        (DEPOSIT_PAID, 'DEPOSIT_PAID'),
+        (CREATING_OUTGOING_TRANSFER, 'CREATING MONEY TRANSFER TO USER'),
+        (OUTGOING_RUNNING, 'TRANSFER IN STATUS SUCCESS'),
+        (CLOSED, 'EXCHANGE IS GONE'),
+        (FAILED, 'FAILED EXCHANGE'),
     )
 
     user_email = models.EmailField(verbose_name='Email of user')
@@ -128,44 +190,61 @@ class ExchangeHistory(Base):
     transaction_input = models.OneToOneField(InputTransaction,
                                              null=True,
                                              blank=True,
-                                             on_delete=models.SET_NULL)
+                                             on_delete=models.SET_NULL,
+                                             related_name='exchange_history')
 
     transaction_output = models.OneToOneField(OutPutTransaction,
                                               null=True,
                                               blank=True,
-                                              on_delete=models.SET_NULL)
+                                              on_delete=models.SET_NULL,
+                                              related_name='exchange_history')
 
     status = models.SmallIntegerField(choices=EXCHANGE_STATUTES,
-                                      default=ACTIVE,
+                                      default=NEW,
                                       db_index=True)
 
-    amount = models.DecimalField(verbose_name='Exchange amount',
-                                 max_digits=16,
-                                 decimal_places=5)
+    ingoing_amount = models.DecimalField(verbose_name='From exchange amount',
+                                         max_digits=16,
+                                         decimal_places=5)
+
+    outgoing_amount = models.DecimalField(verbose_name='To exchange amount',
+                                          max_digits=16,
+                                          decimal_places=5)
+
+    wallet = models.ForeignKey(PlatformWallet,
+                               verbose_name='Which wallet does '
+                                            'the current transaction belong to',
+                               null=True,
+                               blank=True,
+                               on_delete=models.SET_NULL,
+                               related_name='exchange_history')
+
+    @property
+    def state(self):
+        from exchanger import states
+        """
+            one of State in states.py
+        """
+        return states.state_by_status(self.status)
+
+    def request_update(self, stop_status: int = None):
+        """Update  state with state inner transition. Commit.
+        Should use for initiative update without params.
+        :param stop_status status u want to stop, if None forward if possible.
+        """
+        self.state.make_inner_transition(self, stop_status=stop_status)
+
+    def outer_update(self, stop_status: int = None, **params):
+        """Update loan state with state outer transition. Commit.
+        Should use for update state with some result from asynchronous task. Update parameters are passing using params.
+        :param stop_status status u want to stop, if None forward if possible.
+        """
+        self.state.make_outer_transition(self, stop_status=stop_status, **params)
 
     def __repr__(self):
-        return f'History id: {self.id} bound with user {self.user_email}'
+        return f'Exchange history id: {self.id} bound with user' \
+               f' {self.user_email}'
 
     class Meta:
         verbose_name = 'Exchange History'
         verbose_name_plural = 'Exchange Histories'
-
-
-class PlatformWallet(Base):
-
-    address = models.CharField(verbose_name='Wallet address',
-                               max_length=100,
-                               unique=True)
-
-    currency = models.CharField(verbose_name='Wallet currency_slug',
-                                max_length=40)
-
-    is_active = models.BooleanField(verbose_name='Is active wallet',
-                                    default=True)
-
-    def __repr__(self):
-        return f'Wallet id: {self.id} currency {self.currency}'
-
-    class Meta:
-        verbose_name = 'Platform Wallet'
-        verbose_name_plural = 'Platform Wallets'
