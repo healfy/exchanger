@@ -138,7 +138,7 @@ class UnknownState(State):
 
 
 class NewState(State):
-    id: models.ExchangeHistory.NEW
+    id = models.ExchangeHistory.NEW
 
     @classmethod
     def set(
@@ -149,12 +149,27 @@ class NewState(State):
 
         wallet = models.PlatformWallet.objects.get(
             currency__name=exchange_object.from_currency,
-            currency__active=True,
             is_active=True,
         )
         exchange_object.wallet = wallet
+        trx = cls.set_input_transaction(exchange_object)
+        exchange_object.transaction_input = trx
+        exchange_object.save()
 
         return exchange_object.state
+
+    @classmethod
+    def set_input_transaction(
+            cls,
+            exchange_object: models.ExchangeHistory
+    ) -> models.InputTransaction:
+
+        return models.InputTransaction.objects.create(
+            value=exchange_object.ingoing_amount,
+            to_address=exchange_object.wallet.address,
+            from_address=exchange_object.from_address,
+            currency=exchange_object.from_currency
+        )
 
     @classmethod
     def _inner_transition(

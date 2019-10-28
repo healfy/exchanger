@@ -1,3 +1,4 @@
+import uuid
 import typing
 from datetime import datetime
 from django.db import models
@@ -40,8 +41,8 @@ class Currency(Base):
         verbose_name = 'Currency'
         verbose_name_plural = 'Currencies'
 
-    def __repr__(self):
-        return f'Currency ({self.id}, {self.name})'
+    def __str__(self):
+        return f'{self.name}'
 
 
 class TransactionBase(Base):
@@ -60,7 +61,9 @@ class TransactionBase(Base):
     trx_hash = models.CharField(verbose_name='Transaction hash',
                                 max_length=100,
                                 db_index=True,
-                                unique=True)
+                                unique=True,
+                                null=True,
+                                blank=True)
 
     value = models.DecimalField(verbose_name='Transaction amount',
                                 max_digits=16,
@@ -90,6 +93,9 @@ class TransactionBase(Base):
                                     related_name='%(app_label)s_%(class)s_'
                                                  'related')
 
+    uuid = models.UUIDField(verbose_name='Internal hash for identification trx',
+                            default=uuid.uuid4)
+
     def confirm(self,
                 status: int,
                 time_confirmed: typing.Optional[datetime] = None
@@ -110,7 +116,7 @@ class InputTransaction(TransactionBase):
         verbose_name = 'Input Transaction'
         verbose_name_plural = 'Input Transactions'
 
-    def __repr__(self):
+    def __str__(self):
         return f'InputTransaction ({self.id}, {self.currency})'
 
 
@@ -120,7 +126,7 @@ class OutPutTransaction(TransactionBase):
         verbose_name = 'OutPut Transaction'
         verbose_name_plural = 'OutPut Transactions'
 
-    def __repr__(self):
+    def __str__(self):
         return f'OutPutTransaction ({self.id}, {self.currency})'
 
 
@@ -138,7 +144,7 @@ class PlatformWallet(Base):
     is_active = models.BooleanField(verbose_name='Is active wallet',
                                     default=True)
 
-    def __repr__(self):
+    def __str__(self):
         return f'Wallet id: {self.id} currency {self.currency}'
 
     class Meta:
@@ -177,15 +183,19 @@ class ExchangeHistory(Base):
                               decimal_places=8,
                               default=0)
 
-    from_currency = models.CharField(verbose_name='Currency from',
-                                     max_length=30)
+    from_currency = models.ForeignKey(Currency,
+                                      verbose_name='Currency from',
+                                      on_delete=models.CASCADE,
+                                      related_name='exchange_history')
 
-    to_currency = models.CharField(verbose_name='Currency to',
-                                   max_length=30)
+    to_currency = models.ForeignKey(Currency,
+                                    verbose_name='Currency to',
+                                    on_delete=models.CASCADE)
 
     issue_rate = models.DecimalField(verbose_name='Rate in usd',
                                      max_digits=16,
-                                     decimal_places=8)
+                                     decimal_places=8,
+                                     default=0)
 
     transaction_input = models.OneToOneField(InputTransaction,
                                              null=True,
@@ -200,7 +210,7 @@ class ExchangeHistory(Base):
                                               related_name='exchange_history')
 
     status = models.SmallIntegerField(choices=EXCHANGE_STATUTES,
-                                      default=NEW,
+                                      default=UNKNOWN,
                                       db_index=True)
 
     ingoing_amount = models.DecimalField(verbose_name='From exchange amount',
@@ -218,6 +228,10 @@ class ExchangeHistory(Base):
                                blank=True,
                                on_delete=models.SET_NULL,
                                related_name='exchange_history')
+
+    from_address = models.CharField(verbose_name='Address from we are '
+                                                 'expect trx',
+                                    max_length=50)
 
     @property
     def state(self):
@@ -241,7 +255,7 @@ class ExchangeHistory(Base):
         """
         self.state.make_outer_transition(self, stop_status=stop_status, **params)
 
-    def __repr__(self):
+    def __str__(self):
         return f'Exchange history id: {self.id} bound with user' \
                f' {self.user_email}'
 

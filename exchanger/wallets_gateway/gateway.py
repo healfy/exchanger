@@ -33,12 +33,6 @@ class WalletsServiceGateway(BaseGateway):
         """
 
         request_message = self.MODULE.PlatformWLTMonitoringRequest(
-            wallet=self.MODULE.Wallet(
-                external_id=external_id,
-                address=address,
-                is_platform=is_platform,
-                currency_slug=currency_slug,
-            ),
             expected_address=expected_address
         )
 
