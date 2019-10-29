@@ -47,6 +47,7 @@ class State(ABC):
         """
         cls.validate(exchange_object)
         exchange_object.status = cls.id
+        exchange_object.save()
         return exchange_object.state
 
     @classmethod
@@ -126,6 +127,52 @@ class State(ABC):
         return to_state in __STATES_TRANSACTIONS__[from_state]
 
 
+class SetWalletMixin:
+    query = models.PlatformWallet.objects.filter(is_active=True)
+    default = 'ethereum'
+
+    @classmethod
+    def set_wallet(
+            cls,
+            instance: models.ExchangeHistory
+    ) -> typing.NoReturn:
+
+        currency = instance.from_currency
+        slug = cls.default if not currency.is_bitcoin else currency.slug
+        instance.wallet = cls.query.get(currency__slug=slug)
+
+
+class SetTransactionMixin:
+    model: typing.Type['models.TransactionBase']
+    trx_attr: str
+
+    @classmethod
+    def set_transaction(
+            cls,
+            instance: models.ExchangeHistory,
+            **params
+    ) -> typing.NoReturn:
+
+        setattr(instance, cls.trx_attr, cls.model.objects.create(**params))
+
+
+class ConfirmTransactionMixin:
+    trx_attr: str
+    next_state: typing.Type['State']
+
+    @classmethod
+    def _inner_transition(
+            cls,
+            exchange_object: models.ExchangeHistory
+    ) -> typing.Union[typing.Type['State'], object]:
+
+        trx = getattr(exchange_object, cls.trx_attr)
+
+        if trx.status == models.TransactionBase.CONFIRMED:
+            return cls.next_state.set(exchange_object)
+        return cls
+
+
 # States
 class UnknownState(State):
     """Default state for not - created exchange ."""
@@ -140,8 +187,16 @@ class UnknownState(State):
         return NewState.set(exchange_object)
 
 
-class NewState(State):
+class NewState(State,
+               SetTransactionMixin,
+               SetWalletMixin):
+
+    """
+    Initial state for exchange object
+    """
+
     id = models.ExchangeHistory.NEW
+    model = models.InputTransaction
 
     @classmethod
     def set(
@@ -149,34 +204,17 @@ class NewState(State):
             exchange_object: models.ExchangeHistory,
             **params
     ):
-        cls.validate(exchange_object)
-        exchange_object.status = cls.id
-
-        wallet = models.PlatformWallet.objects.get(
-            currency__name=exchange_object.from_currency,
-            is_active=True,
-        )
-        exchange_object.wallet = wallet
-        trx = cls.set_input_transaction(exchange_object)
-        exchange_object.transaction_input = trx
-        exchange_object.save()
-        logger.info(f'Created new exchange operation with params: \n'
-                    f'{exchange_object.to_info_message}')
-
-        return exchange_object.state
-
-    @classmethod
-    def set_input_transaction(
-            cls,
-            exchange_object: models.ExchangeHistory
-    ) -> models.InputTransaction:
-
-        return models.InputTransaction.objects.create(
+        cls.set_wallet(exchange_object)
+        cls.set_transaction(
+            exchange_object,
             value=exchange_object.ingoing_amount,
             to_address=exchange_object.wallet.address,
             from_address=exchange_object.from_address,
             currency=exchange_object.from_currency
         )
+        logger.info(f'Created new exchange operation with params: \n'
+                    f'{exchange_object.to_info_message}')
+        return super().set(exchange_object)
 
     @classmethod
     def _inner_transition(
@@ -197,6 +235,7 @@ class NewState(State):
 
 
 class WaitingDepositState(State):
+
     id = models.ExchangeHistory.WAITING_DEPOSIT
 
     @classmethod
@@ -225,11 +264,16 @@ class WaitingDepositState(State):
         """
         return True
 
+
 # Failed states case
 
 
-class InsufficientDepositState(State):
+class InsufficientDepositState(State,
+                               SetTransactionMixin):
+
     id = models.ExchangeHistory.INSUFFICIENT_DEPOSIT
+    model = models.OutPutTransaction
+    trx_attr = 'transaction_output'
 
     @classmethod
     def set(
@@ -238,25 +282,14 @@ class InsufficientDepositState(State):
             **params
     ) -> typing.Type['State']:
 
-        cls.validate(exchange_object)
-        exchange_object.status = cls.id
-        exchange_object.transaction_output = cls.set_output_transaction(
-            exchange_object)
-        exchange_object.save()
-        return exchange_object.state
-
-    @classmethod
-    def set_output_transaction(
-            cls,
-            exchange_object: models.ExchangeHistory
-    ) -> models.OutPutTransaction:
-
-        return models.OutPutTransaction.objects.create(
+        cls.set_transaction(
+            exchange_object,
             value=exchange_object.transaction_input.value,
             from_address=exchange_object.wallet.address,
             to_address=exchange_object.from_address,
             currency=exchange_object.transaction_input.currency
         )
+        return super().set(exchange_object)
 
     @classmethod
     def _inner_transition(
@@ -271,27 +304,19 @@ class InsufficientDepositState(State):
         return ReturningDepositState.set(exchange_object)
 
 
-class ReturningDepositState(State):
-    id = models.ExchangeHistory.RETURNING_DEPOSIT
-
-    @classmethod
-    def _inner_transition(
-            cls,
-            exchange_object: models.ExchangeHistory
-    ) -> typing.Type['State']:
-
-        trx = exchange_object.transaction_output
-
-        if trx.status == models.TransactionBase.CONFIRMED:
-            return FailedState.set(exchange_object)
-        return cls
-
-
 class FailedState(State):
     id = models.ExchangeHistory.FAILED
 
-# Success states cases
 
+class ReturningDepositState(ConfirmTransactionMixin,
+                            State):
+
+    id = models.ExchangeHistory.RETURNING_DEPOSIT
+    next_state = FailedState
+    trx_attr = 'transaction_output'
+
+
+# Success states cases
 
 class DepositPaidState(State):
     id = models.ExchangeHistory.DEPOSIT_PAID
@@ -304,21 +329,28 @@ class DepositPaidState(State):
         return CreatingOutGoingState.set(exchange_object)
 
 
-class CreatingOutGoingState(InsufficientDepositState):
+class CreatingOutGoingState(State,
+                            SetTransactionMixin):
+
     id = models.ExchangeHistory.CREATING_OUTGOING_TRANSFER
+    model = models.OutPutTransaction
+    trx_attr = 'transaction_output'
 
     @classmethod
-    def set_output_transaction(
+    def set(
             cls,
-            exchange_object: models.ExchangeHistory
-    ) -> models.OutPutTransaction:
+            exchange_object: models.ExchangeHistory,
+            **params
+    ) -> typing.Type['State']:
 
-        return models.OutPutTransaction.objects.create(
+        cls.set_transaction(
+            exchange_object,
             value=exchange_object.outgoing_amount,
             from_address=exchange_object.wallet.address,
             to_address=exchange_object.to_address,
             currency=exchange_object.to_currency
         )
+        return super().set(exchange_object)
 
     @classmethod
     def _inner_transition(
@@ -333,12 +365,15 @@ class CreatingOutGoingState(InsufficientDepositState):
         return OutgoingRunningState.set(exchange_object)
 
 
-class OutgoingRunningState(State):
-    id = models.ExchangeHistory.OUTGOING_RUNNING
-
-
 class ClosedState(State):
     id = models.ExchangeHistory.CLOSED
+
+
+class OutgoingRunningState(ConfirmTransactionMixin,
+                           State):
+    id = models.ExchangeHistory.OUTGOING_RUNNING
+    trx_attr = 'transaction_output'
+    next_state = ClosedState
 
 
 def state_by_status(status: typing.Union[int, State]):
@@ -347,5 +382,11 @@ def state_by_status(status: typing.Union[int, State]):
 
 
 __STATES_TRANSACTIONS__ = {
-    NewState: WaitingDepositState
+    NewState: [WaitingDepositState],
+    WaitingDepositState: [DepositPaidState, InsufficientDepositState],
+    DepositPaidState: [CreatingOutGoingState],
+    InsufficientDepositState: [ReturningDepositState],
+    ReturningDepositState: [FailedState],
+    CreatingOutGoingState: [OutgoingRunningState],
+    OutgoingRunningState: [ClosedState],
 }

@@ -37,6 +37,10 @@ class Currency(Base):
     is_token = models.BooleanField(verbose_name='Is token currency',
                                    default=False)
 
+    @property
+    def is_bitcoin(self):
+        return self.slug == 'bitcoin'
+
     class Meta:
         verbose_name = 'Currency'
         verbose_name_plural = 'Currencies'
