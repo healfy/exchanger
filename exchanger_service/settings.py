@@ -121,6 +121,10 @@ ONE_DAY_IN_SECONDS = 60 * 60 * 24
 
 WALLETS_GW_ADDRESS = ''
 
+ETH_ADDRESS = os.getenv('ETH_COLD_ADDRESS', '0xF6E4709341426Dee13c9e9EaB6e4779b299CE2F7')
+BTC_ADDRESS = os.getenv('BTC_COLD_ADDRESS', 'mtQGkRpBVRDdRBwVkCbtGArdCYmiqkQrB1')
+BTC_EXTERNAL_ID = os.getenv('BTC_EXTERNAL_ID', 1)
+ETH_EXTERNAL_ID = os.getenv('ETH_EXTERNAL_ID', 2)
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.2/topics/i18n/

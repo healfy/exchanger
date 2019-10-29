@@ -22,6 +22,8 @@ enum ExchangeStatutes{
     OUTGOING_RUNNING = 6;
     CLOSED = 7;
     FAILED = 8;
+    RETURNING_DEPOSIT = 9;
+    DEPOSIT_RETURNED = 10;
 }
 
 enum ResponseStatus {

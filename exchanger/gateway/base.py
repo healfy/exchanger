@@ -15,41 +15,55 @@ class BaseGateway(ABC):
     """
 
     GW_ADDRESS: str
+    TIMEOUT: int
+    BAD_RESPONSE_MSG: str
     ALLOWED_STATUTES: typing.Tuple[int]
     NAME: str
     MODULE: typing.Any
     ServiceStub: object
     LOGGER: logging.Logger = logger
+    EXC_CLASS: typing.Callable
     response_attr: str = 'header'
 
     @retry(stop_max_attempt_number=settings.REMOTE_OPERATION_ATTEMPT_NUMBER)
-    def _base_request(self, request_message, request_method) -> \
-            typing.Tuple[bool, typing.Union[str, typing.Dict[str, typing.Any]]]:
-        """Perform remote request.
-        Case 1: success - return tuple of True, parsed from message dictionary response;
-        Case 2: fail - return tuple of False, error string message.
+    def _base_request(self, request_message, request_method,
+                      bad_response_msg: str = "",
+                      extend_statutes: typing.Optional = None) -> \
+            typing.Optional[typing.Dict[str, typing.Any]]:
+        """
+        :param request_message: protobuf message request object
+        :param request_method: client request method
+        """
+        if bad_response_msg:
+            self.bad_response_msg = bad_response_msg
 
-        :param request_message - message to send.
-        :param request_method - stub method."""
-
+        if extend_statutes:
+            self.ALLOWED_STATUTES += extend_statutes
         try:
-            response = request_method(request_message,
-                                      timeout=settings.GRPC_TIMEOUT)
-
+            response = request_method(request_message, timeout=self.TIMEOUT)
             header = getattr(response, self.response_attr)
             status = header.status
-
             if status in self.ALLOWED_STATUTES:
-                return True, MessageToDict(response,
-                                           preserving_proto_field_name=True)
-            text = f"Service {self.NAME}: {request_method._method} "\
-                   f"method failed with error {header.description} "\
-                   f"for data {request_message.__class__.__name__}: "\
-                   f"{request_message}."
-
+                if status != self.MODULE.SUCCESS:
+                    self.LOGGER.warning(
+                        f"{self.NAME} error",
+                        {
+                            'status': self.MODULE.ResponseStatus.Name(status),
+                            'request': request_message,
+                            'from': self.__class__.__name__,
+                        }
+                    )
+                return MessageToDict(response, preserving_proto_field_name=True)
+            raise self.EXC_CLASS(str(
+                self.bad_response_msg + f" Got status "
+                                        f"{self.MODULE.ResponseStatus.Name(status)}: "
+                                        f"{response.status.description}.").replace("\n", " "))
         except Exception as exc:
-
-            text = f"{self.NAME} got error {exc}"
-
-        logger.error(text)
-        return False, {'error': text}
+            logger.error(f"{self.NAME} error",
+                           {
+                               "from": self.__class__.__name__,
+                               "exc": exc,
+                               "exc_class": exc.__class__,
+                               "request": request_message.__class__.__name__,
+                           })
+            raise exc

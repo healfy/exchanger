@@ -144,6 +144,10 @@ class PlatformWallet(Base):
     is_active = models.BooleanField(verbose_name='Is active wallet',
                                     default=True)
 
+    external_id = models.IntegerField(verbose_name='External id from blockhain',
+                                      unique=True,
+                                      db_index=True)
+
     def __str__(self):
         return f'Wallet id: {self.id} currency {self.currency}'
 
@@ -153,6 +157,30 @@ class PlatformWallet(Base):
 
 
 class ExchangeHistory(Base):
+    """
+    Scenario of funds exchange operation development
+
+    ********************* NEW *****************************
+                           *
+                           *
+    ****************  WAITING_DEPOSIT *********************
+                        *      *
+                      *          *
+                    *              *
+    ****** INSUFFICIENT_DEPOSIT    DEPOSIT_PAID ***********
+                 *                     *
+                 *                     *
+                 *                     *
+     ****** RETURNING_DEPOSIT    CREATING_OUTGOING_TRANSFER
+                 *                     *
+                 *                     *
+                 *                     *
+    ****** DEPOSIT_RETURNED       OUTGOING_RUNNING *******
+                 *                     *
+                 *                     *
+                 *                     *
+    ********* FAILED                CLOSED ****************
+    """
 
     UNKNOWN = 0
     NEW = 1
@@ -163,6 +191,8 @@ class ExchangeHistory(Base):
     OUTGOING_RUNNING = 6
     CLOSED = 7
     FAILED = 8
+    RETURNING_DEPOSIT = 9
+    DEPOSIT_RETURNED = 10
 
     EXCHANGE_STATUTES = (
         (UNKNOWN, 'UNKNOWN STATUS'),
@@ -174,6 +204,8 @@ class ExchangeHistory(Base):
         (OUTGOING_RUNNING, 'TRANSFER IN STATUS SUCCESS'),
         (CLOSED, 'EXCHANGE IS GONE'),
         (FAILED, 'FAILED EXCHANGE'),
+        (RETURNING_DEPOSIT, 'RETURNING_DEPOSIT'),
+        (DEPOSIT_RETURNED, 'DEPOSIT_RETURNED'),
     )
 
     user_email = models.EmailField(verbose_name='Email of user')
@@ -233,6 +265,9 @@ class ExchangeHistory(Base):
                                                  'expect trx',
                                     max_length=50)
 
+    to_address = models.CharField(verbose_name='Address to which we are send',
+                                  max_length=50)
+
     @property
     def state(self):
         from exchanger import states
@@ -250,7 +285,8 @@ class ExchangeHistory(Base):
 
     def outer_update(self, stop_status: int = None, **params):
         """Update loan state with state outer transition. Commit.
-        Should use for update state with some result from asynchronous task. Update parameters are passing using params.
+        Should use for update state with some result from asynchronous task.
+        Update parameters are passing using params.
         :param stop_status status u want to stop, if None forward if possible.
         """
         self.state.make_outer_transition(self, stop_status=stop_status, **params)
@@ -258,6 +294,17 @@ class ExchangeHistory(Base):
     def __str__(self):
         return f'Exchange history id: {self.id} bound with user' \
                f' {self.user_email}'
+
+    @property
+    def to_info_message(self):
+        return {
+            'from_currency': self.from_currency.name,
+            'to_currency': self.to_currency.name,
+            'from_address': self.from_address,
+            'ingoing_amount': self.ingoing_amount,
+            'outgoing_amount': self.outgoing_amount,
+            'user': self.user_email
+        }
 
     class Meta:
         verbose_name = 'Exchange History'
