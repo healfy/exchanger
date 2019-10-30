@@ -1,5 +1,6 @@
 import grpc
 import logging
+from datetime import datetime
 from concurrent import futures
 from contextlib import contextmanager
 from google.protobuf.json_format import MessageToDict
@@ -24,7 +25,10 @@ class UpdateMixin:
     def action(self, data, ingoing=False):
         model = self.input_model if ingoing else self.output_model
         for trx in data:
-            model.objects.filter(uuid=trx['uuid']).update(hash=trx['trx_hash'])
+            model.objects.filter(uuid=trx['uuid']).update(
+                hash=trx['trx_hash'],
+                confirmed_at=datetime.now()
+            )
 
     def validate_request(self, request):
         return self._validate(request)
