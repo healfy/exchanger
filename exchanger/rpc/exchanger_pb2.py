@@ -25,7 +25,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='exchanger',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x0f\x65xchanger.proto\x12\texchanger\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1egoogle/protobuf/duration.proto\x1a\x1cgoogle/api/annotations.proto\x1a,protoc-gen-swagger/options/annotations.proto\"P\n\x0eResponseHeader\x12)\n\x06status\x18\x01 \x01(\x0e\x32\x19.exchanger.ResponseStatus\x12\x13\n\x0b\x64\x65scription\x18\x02 \x01(\t\"\x10\n\x0eHealthzRequest\"<\n\x0fHealthzResponse\x12)\n\x06header\x18\x01 \x01(\x0b\x32\x19.exchanger.ResponseHeader*\xe4\x01\n\x10\x45xchangeStatutes\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x07\n\x03NEW\x10\x01\x12\x13\n\x0fWAITING_DEPOSIT\x10\x02\x12\x18\n\x14INSUFFICIENT_DEPOSIT\x10\x03\x12\x10\n\x0c\x44\x45POSIT_PAID\x10\x04\x12\x1e\n\x1a\x43REATING_OUTGOING_TRANSFER\x10\x05\x12\x14\n\x10OUTGOING_RUNNING\x10\x06\x12\n\n\x06\x43LOSED\x10\x07\x12\n\n\x06\x46\x41ILED\x10\x08\x12\x15\n\x11RETURNING_DEPOSIT\x10\t\x12\x14\n\x10\x44\x45POSIT_RETURNED\x10\n*J\n\x0eResponseStatus\x12\x0b\n\x07NOT_SET\x10\x00\x12\x0b\n\x07SUCCESS\x10\x01\x12\t\n\x05\x45RROR\x10\x02\x12\x13\n\x0fINVALID_REQUEST\x10\x03\x32V\n\x10\x45xchangerService\x12\x42\n\x07Healthz\x12\x19.exchanger.HealthzRequest\x1a\x1a.exchanger.HealthzResponse\"\x00\x62\x06proto3')
+  serialized_pb=_b('\n\x0f\x65xchanger.proto\x12\texchanger\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1egoogle/protobuf/duration.proto\x1a\x1cgoogle/api/annotations.proto\x1a,protoc-gen-swagger/options/annotations.proto\"P\n\x0eResponseHeader\x12)\n\x06status\x18\x01 \x01(\x0e\x32\x19.exchanger.ResponseStatus\x12\x13\n\x0b\x64\x65scription\x18\x02 \x01(\t\"\x10\n\x0eHealthzRequest\"<\n\x0fHealthzResponse\x12)\n\x06header\x18\x01 \x01(\x0b\x32\x19.exchanger.ResponseHeader\"1\n\x0fTransactionData\x12\x0c\n\x04uuid\x18\x01 \x01(\t\x12\x10\n\x08trx_hash\x18\x02 \x01(\t\"A\n\rUpdateRequest\x12\x30\n\x0ctransactions\x18\x01 \x03(\x0b\x32\x1a.exchanger.TransactionData\";\n\x0eUpdateResponse\x12)\n\x06header\x18\x01 \x01(\x0b\x32\x19.exchanger.ResponseHeader*\xe4\x01\n\x10\x45xchangeStatutes\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x07\n\x03NEW\x10\x01\x12\x13\n\x0fWAITING_DEPOSIT\x10\x02\x12\x18\n\x14INSUFFICIENT_DEPOSIT\x10\x03\x12\x10\n\x0c\x44\x45POSIT_PAID\x10\x04\x12\x1e\n\x1a\x43REATING_OUTGOING_TRANSFER\x10\x05\x12\x14\n\x10OUTGOING_RUNNING\x10\x06\x12\n\n\x06\x43LOSED\x10\x07\x12\n\n\x06\x46\x41ILED\x10\x08\x12\x15\n\x11RETURNING_DEPOSIT\x10\t\x12\x14\n\x10\x44\x45POSIT_RETURNED\x10\n*J\n\x0eResponseStatus\x12\x0b\n\x07NOT_SET\x10\x00\x12\x0b\n\x07SUCCESS\x10\x01\x12\t\n\x05\x45RROR\x10\x02\x12\x13\n\x0fINVALID_REQUEST\x10\x03\x32\xf9\x01\n\x10\x45xchangerService\x12\x42\n\x07Healthz\x12\x19.exchanger.HealthzRequest\x1a\x1a.exchanger.HealthzResponse\"\x00\x12O\n\x16UpdateInputTransaction\x12\x18.exchanger.UpdateRequest\x1a\x19.exchanger.UpdateResponse\"\x00\x12P\n\x17UpdateOutputTransaction\x12\x18.exchanger.UpdateRequest\x1a\x19.exchanger.UpdateResponse\"\x00\x62\x06proto3')
   ,
   dependencies=[google_dot_protobuf_dot_timestamp__pb2.DESCRIPTOR,google_dot_protobuf_dot_duration__pb2.DESCRIPTOR,google_dot_api_dot_annotations__pb2.DESCRIPTOR,protoc__gen__swagger_dot_options_dot_annotations__pb2.DESCRIPTOR,])
 
@@ -82,8 +82,8 @@ _EXCHANGESTATUTES = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=334,
-  serialized_end=562,
+  serialized_start=513,
+  serialized_end=741,
 )
 _sym_db.RegisterEnumDescriptor(_EXCHANGESTATUTES)
 
@@ -113,8 +113,8 @@ _RESPONSESTATUS = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=564,
-  serialized_end=638,
+  serialized_start=743,
+  serialized_end=817,
 )
 _sym_db.RegisterEnumDescriptor(_RESPONSESTATUS)
 
@@ -229,11 +229,116 @@ _HEALTHZRESPONSE = _descriptor.Descriptor(
   serialized_end=331,
 )
 
+
+_TRANSACTIONDATA = _descriptor.Descriptor(
+  name='TransactionData',
+  full_name='exchanger.TransactionData',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='uuid', full_name='exchanger.TransactionData.uuid', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='trx_hash', full_name='exchanger.TransactionData.trx_hash', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=333,
+  serialized_end=382,
+)
+
+
+_UPDATEREQUEST = _descriptor.Descriptor(
+  name='UpdateRequest',
+  full_name='exchanger.UpdateRequest',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='transactions', full_name='exchanger.UpdateRequest.transactions', index=0,
+      number=1, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=384,
+  serialized_end=449,
+)
+
+
+_UPDATERESPONSE = _descriptor.Descriptor(
+  name='UpdateResponse',
+  full_name='exchanger.UpdateResponse',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='header', full_name='exchanger.UpdateResponse.header', index=0,
+      number=1, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=451,
+  serialized_end=510,
+)
+
 _RESPONSEHEADER.fields_by_name['status'].enum_type = _RESPONSESTATUS
 _HEALTHZRESPONSE.fields_by_name['header'].message_type = _RESPONSEHEADER
+_UPDATEREQUEST.fields_by_name['transactions'].message_type = _TRANSACTIONDATA
+_UPDATERESPONSE.fields_by_name['header'].message_type = _RESPONSEHEADER
 DESCRIPTOR.message_types_by_name['ResponseHeader'] = _RESPONSEHEADER
 DESCRIPTOR.message_types_by_name['HealthzRequest'] = _HEALTHZREQUEST
 DESCRIPTOR.message_types_by_name['HealthzResponse'] = _HEALTHZRESPONSE
+DESCRIPTOR.message_types_by_name['TransactionData'] = _TRANSACTIONDATA
+DESCRIPTOR.message_types_by_name['UpdateRequest'] = _UPDATEREQUEST
+DESCRIPTOR.message_types_by_name['UpdateResponse'] = _UPDATERESPONSE
 DESCRIPTOR.enum_types_by_name['ExchangeStatutes'] = _EXCHANGESTATUTES
 DESCRIPTOR.enum_types_by_name['ResponseStatus'] = _RESPONSESTATUS
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
@@ -259,6 +364,27 @@ HealthzResponse = _reflection.GeneratedProtocolMessageType('HealthzResponse', (_
   })
 _sym_db.RegisterMessage(HealthzResponse)
 
+TransactionData = _reflection.GeneratedProtocolMessageType('TransactionData', (_message.Message,), {
+  'DESCRIPTOR' : _TRANSACTIONDATA,
+  '__module__' : 'exchanger_pb2'
+  # @@protoc_insertion_point(class_scope:exchanger.TransactionData)
+  })
+_sym_db.RegisterMessage(TransactionData)
+
+UpdateRequest = _reflection.GeneratedProtocolMessageType('UpdateRequest', (_message.Message,), {
+  'DESCRIPTOR' : _UPDATEREQUEST,
+  '__module__' : 'exchanger_pb2'
+  # @@protoc_insertion_point(class_scope:exchanger.UpdateRequest)
+  })
+_sym_db.RegisterMessage(UpdateRequest)
+
+UpdateResponse = _reflection.GeneratedProtocolMessageType('UpdateResponse', (_message.Message,), {
+  'DESCRIPTOR' : _UPDATERESPONSE,
+  '__module__' : 'exchanger_pb2'
+  # @@protoc_insertion_point(class_scope:exchanger.UpdateResponse)
+  })
+_sym_db.RegisterMessage(UpdateResponse)
+
 
 
 _EXCHANGERSERVICE = _descriptor.ServiceDescriptor(
@@ -267,8 +393,8 @@ _EXCHANGERSERVICE = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=None,
-  serialized_start=640,
-  serialized_end=726,
+  serialized_start=820,
+  serialized_end=1069,
   methods=[
   _descriptor.MethodDescriptor(
     name='Healthz',
@@ -277,6 +403,24 @@ _EXCHANGERSERVICE = _descriptor.ServiceDescriptor(
     containing_service=None,
     input_type=_HEALTHZREQUEST,
     output_type=_HEALTHZRESPONSE,
+    serialized_options=None,
+  ),
+  _descriptor.MethodDescriptor(
+    name='UpdateInputTransaction',
+    full_name='exchanger.ExchangerService.UpdateInputTransaction',
+    index=1,
+    containing_service=None,
+    input_type=_UPDATEREQUEST,
+    output_type=_UPDATERESPONSE,
+    serialized_options=None,
+  ),
+  _descriptor.MethodDescriptor(
+    name='UpdateOutputTransaction',
+    full_name='exchanger.ExchangerService.UpdateOutputTransaction',
+    index=2,
+    containing_service=None,
+    input_type=_UPDATEREQUEST,
+    output_type=_UPDATERESPONSE,
     serialized_options=None,
   ),
 ])

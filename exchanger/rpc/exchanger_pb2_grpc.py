@@ -19,6 +19,16 @@ class ExchangerServiceStub(object):
         request_serializer=exchanger__pb2.HealthzRequest.SerializeToString,
         response_deserializer=exchanger__pb2.HealthzResponse.FromString,
         )
+    self.UpdateInputTransaction = channel.unary_unary(
+        '/exchanger.ExchangerService/UpdateInputTransaction',
+        request_serializer=exchanger__pb2.UpdateRequest.SerializeToString,
+        response_deserializer=exchanger__pb2.UpdateResponse.FromString,
+        )
+    self.UpdateOutputTransaction = channel.unary_unary(
+        '/exchanger.ExchangerService/UpdateOutputTransaction',
+        request_serializer=exchanger__pb2.UpdateRequest.SerializeToString,
+        response_deserializer=exchanger__pb2.UpdateResponse.FromString,
+        )
 
 
 class ExchangerServiceServicer(object):
@@ -32,6 +42,20 @@ class ExchangerServiceServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
+  def UpdateInputTransaction(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def UpdateOutputTransaction(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
 
 def add_ExchangerServiceServicer_to_server(servicer, server):
   rpc_method_handlers = {
@@ -39,6 +63,16 @@ def add_ExchangerServiceServicer_to_server(servicer, server):
           servicer.Healthz,
           request_deserializer=exchanger__pb2.HealthzRequest.FromString,
           response_serializer=exchanger__pb2.HealthzResponse.SerializeToString,
+      ),
+      'UpdateInputTransaction': grpc.unary_unary_rpc_method_handler(
+          servicer.UpdateInputTransaction,
+          request_deserializer=exchanger__pb2.UpdateRequest.FromString,
+          response_serializer=exchanger__pb2.UpdateResponse.SerializeToString,
+      ),
+      'UpdateOutputTransaction': grpc.unary_unary_rpc_method_handler(
+          servicer.UpdateOutputTransaction,
+          request_deserializer=exchanger__pb2.UpdateRequest.FromString,
+          response_serializer=exchanger__pb2.UpdateResponse.SerializeToString,
       ),
   }
   generic_handler = grpc.method_handlers_generic_handler(

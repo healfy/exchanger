@@ -9,7 +9,12 @@ from google.protobuf.json_format import MessageToDict
 logger = logging.getLogger('exchanger')
 
 
-class BaseGateway(ABC):
+class BaseRepr:
+    def __repr__(self):
+        return f'{self.__class__.__name__} class'
+
+
+class BaseGateway(BaseRepr, ABC):
     """
     Base class for all remote gateways that are connected with this service
     """

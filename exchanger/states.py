@@ -4,12 +4,12 @@ from abc import ABC
 from exchanger import models
 from exchanger import utils
 from exchanger.gateway import wallets_service_gw
-
+from exchanger.gateway.base import BaseRepr
 
 logger = logging.getLogger('exchanger.log')
 
 
-class State(ABC):
+class State(BaseRepr, ABC):
     """
     Abstract class for exchange_object states.
     Used to implement transitions between states of a exchange_object,
