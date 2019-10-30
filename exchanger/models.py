@@ -3,8 +3,11 @@ import typing
 from datetime import datetime
 from django.db import models
 
+from exchanger.gateway.base import BaseRepr
 
-class Base(models.Model):
+
+class Base(BaseRepr,
+           models.Model):
 
     created_at = models.DateTimeField(verbose_name='Time of created',
                                       default=datetime.now,
