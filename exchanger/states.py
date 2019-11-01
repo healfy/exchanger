@@ -333,7 +333,7 @@ class WaitingDepositState(State):
         trx = exchange_object.transaction_input
 
         if trx.status == models.TransactionBase.CONFIRMED:
-            if cls.validate_amount(trx):
+            if cls.validate_amount(trx, exchange_object):
                 return DepositPaidState.set(exchange_object)
             return InsufficientDepositState.set(exchange_object)
         return cls
@@ -341,14 +341,11 @@ class WaitingDepositState(State):
     @classmethod
     def validate_amount(
             cls,
-            transaction:  models.InputTransaction
+            transaction:  models.InputTransaction,
+            exchange_object: models.ExchangeHistory,
     ) -> bool:
-        """
-        :TODO logic to validate input amount
-        :param transaction:
-        :return:
-        """
-        return True
+
+        return transaction.value == exchange_object.ingoing_amount
 
 
 # Failed states case

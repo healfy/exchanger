@@ -50,6 +50,7 @@ message HealthzResponse {
 message TransactionData{
     string uuid = 1;
     string trx_hash = 2;
+    string value = 3;
 }
 
 message UpdateRequest {

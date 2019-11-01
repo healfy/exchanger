@@ -29,7 +29,9 @@ class UpdateMixin:
             model.objects.filter(uuid=trx['uuid'],
                                  status__in=model.ACTIVE_STATUTES).update(
                 hash=trx['trx_hash'],
-                confirmed_at=datetime.now()
+                value=trx['value'],
+                confirmed_at=datetime.now(),
+                status=model.CONFIRMED
             )
 
     def validate_request(self, request):
