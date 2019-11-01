@@ -28,5 +28,5 @@ class ExchangeHistorySerializer(serializers.ModelSerializer):
         model = ExchangeHistory
         fields = ('id', 'user_email', 'from_currency', 'transaction_output',
                   'to_currency', 'status', 'ingoing_amount',
-                  'transaction_input', 'outgoing_amount', 'wallet',
-                  'from_address')
+                  'transaction_input', 'outgoing_amount', 'ingoing_wallet',
+                  'outgoing_wallet', 'from_address')

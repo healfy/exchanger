@@ -8,37 +8,37 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
 
-        bitcoin = Currency.objects.get_create(
+        bitcoin,_ = Currency.objects.get_or_create(
             name='Bitcoin',
             slug='bitcoin',
         )
 
-        ethereum = Currency.objects.get_create(
+        ethereum, _ = Currency.objects.get_or_create(
             name='Ethereum',
             slug='ethereum',
         )
         
-        Currency.objects.get_create(
+        Currency.objects.get_or_create(
             name='Omisego',
             slug='omisego',
             is_token=True,
         ),
-        Currency.objects.get_create(
+        Currency.objects.get_or_create(
             name='Basic Attention Token',
             slug='basic-attention-token',
             is_token=True,
         ),
-        Currency.objects.get_create(
+        Currency.objects.get_or_create(
             name='Holo',
             slug='holo',
             is_token=True,
         ),
-        Currency.objects.get_create(
+        Currency.objects.get_or_create(
             name='Chainlink',
             slug='chainlink',
             is_token=True,
         ),
-        Currency.objects.get_create(
+        Currency.objects.get_or_create(
             name='Zilliqa',
             slug='zilliqa',
             is_token=True,

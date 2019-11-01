@@ -89,8 +89,8 @@ DATABASES = {
 }
 
 REST_FRAMEWORK = {
-    # Use Django's standard `django.contrib.exchanger` permissions,
-    # or allow read-only access for unexchangerenticated users.
+    # Use Django's standard `django.contrib.auth` permissions,
+    # or allow read-only access for unauthenticated users.
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny'
     ]
@@ -98,20 +98,20 @@ REST_FRAMEWORK = {
 
 
 # Password validation
-# https://docs.djangoproject.com/en/2.2/ref/settings/#exchanger-password-validators
+# https://docs.djangoproject.com/en/2.2/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.exchanger.password_validation.UserAttributeSimilarityValidator',
+        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
     },
     {
-        'NAME': 'django.contrib.exchanger.password_validation.MinimumLengthValidator',
+        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
     },
     {
-        'NAME': 'django.contrib.exchanger.password_validation.CommonPasswordValidator',
+        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
     },
     {
-        'NAME': 'django.contrib.exchanger.password_validation.NumericPasswordValidator',
+        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
 GRPC_TIMEOUT = 10  # default timeout for grpc requests
@@ -122,6 +122,13 @@ ONE_DAY_IN_SECONDS = 60 * 60 * 24
 
 WALLETS_GW_ADDRESS = ''
 TRANSACTIONS_GW_ADDRESS = ''
+CURRENCY_GW_ADDRESS = ''
+MIN_FEE_LIMIT = 100  # in usd
+
+TRX_FEE_DICT = {
+    True: 10,  # in usd
+    False: 5,  # in usd
+}
 
 ETH_ADDRESS = os.getenv('ETH_COLD_ADDRESS', '0xF6E4709341426Dee13c9e9EaB6e4779b299CE2F7')
 BTC_ADDRESS = os.getenv('BTC_COLD_ADDRESS', 'mtQGkRpBVRDdRBwVkCbtGArdCYmiqkQrB1')

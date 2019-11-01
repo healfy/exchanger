@@ -1,9 +1,11 @@
 from rest_framework import viewsets
+from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import action
 from drf_yasg.utils import swagger_auto_schema
 from exchanger import states
+from exchanger.gateway import currency_service_gw
 from exchanger.models import (
     ExchangeHistory
 )
@@ -45,3 +47,9 @@ class ExchangeHistoryViewSet(viewsets.ModelViewSet):
         instance.request_update()
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
+
+
+class CurrencyView(APIView):
+
+    def get(self, request, format=None):
+        return Response(currency_service_gw.get_currencies())

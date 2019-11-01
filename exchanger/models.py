@@ -29,10 +29,10 @@ class Base(models.Model):
 class Currency(Base):
 
     name = models.CharField(verbose_name='Currency name',
-                            max_length=20)
+                            max_length=50)
 
     slug = models.CharField(verbose_name='Currency slug',
-                            max_length=20)
+                            max_length=50)
 
     active = models.BooleanField(verbose_name='it is used',
                                  default=True)
@@ -230,8 +230,7 @@ class ExchangeHistory(Base):
 
     fee = models.DecimalField(verbose_name='Transaction fee',
                               max_digits=16,
-                              decimal_places=8,
-                              default=0)
+                              decimal_places=8)
 
     from_currency = models.ForeignKey(Currency,
                                       verbose_name='Currency from',

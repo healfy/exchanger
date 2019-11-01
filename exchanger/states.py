@@ -4,6 +4,7 @@ from abc import ABC
 from exchanger import models
 from exchanger import utils
 from exchanger.gateway import wallets_service_gw
+from exchanger.gateway import currency_service_gw
 from exchanger.gateway import trx_service_gw
 from exchanger.gateway.base import BaseRepr
 
@@ -14,8 +15,7 @@ class State(BaseRepr, ABC):
     """
     Abstract class for exchange_object states.
     Used to implement transitions between states of a exchange_object,
-    update exchange_object parameters, monitor asynchronous results
-    (transactions, verification statuses).
+    update exchange_object parameters
     """
 
     id: typing.Optional[int] = None
@@ -167,6 +167,9 @@ class SetTransactionMixin:
     Mixin class for set transaction to exchange object
 
     model: one of two existing model(InputTransaction, OutPutTransaction)
+    trx_attr: ont of two attributes of instance ExchangeHistory -
+    transaction_input (for input transactions)
+    transaction_output (for output transactions)
 
     """
     model: typing.Type['models.TransactionBase']
@@ -183,8 +186,25 @@ class SetTransactionMixin:
 
 
 class CreateTransferMixin:
+    """
+    Mixin class to create payment by external service
+    Connecting with service transactions by class trx_service_gw
+
+    next_state: state to which following exchange object
+    wallet_type: one two types of wallet associated with the exchange object
+    There are two cases here:
+
+     if it successfully direction we are sending money from cold wallet
+     associated with currency which user want to buy(outgoing_wallet),
+     recalculate transaction fee
+
+     if it failure direction we are sending money from wallet to which the user
+     transferred the deposit (ingoing wallet)
+    """
+
     next_state: typing.Type['State']
     wallet_type: str
+    set_fee: bool
 
     @classmethod
     def _inner_transition(
@@ -203,6 +223,16 @@ class CreateTransferMixin:
 
 
 class ConfirmTransactionMixin:
+
+    """
+    Mixin class for confirm transaction associated with exchange object
+
+    trx_attr: ont of two attributes of instance ExchangeHistory -
+    transaction_input (for input transactions)
+    transaction_output (for output transactions)
+    next_state: state to which following exchange object
+    """
+
     trx_attr: str
     next_state: typing.Type['State']
 
@@ -239,6 +269,12 @@ class NewState(State,
 
     """
     Initial state for exchange object
+    There are three steps that we must to do.
+    1. set ingoing and outgoing wallets
+    2. set input transaction
+    3. sent to wallets service params of input transaction that we are expected
+    from user
+
     """
 
     id = models.ExchangeHistory.NEW
@@ -282,6 +318,9 @@ class NewState(State,
 
 
 class WaitingDepositState(State):
+    """
+    State in which we are waiting money(deposit) transfer from user
+    """
 
     id = models.ExchangeHistory.WAITING_DEPOSIT
 
@@ -315,12 +354,21 @@ class WaitingDepositState(State):
 # Failed states case
 
 class FailedState(State):
+    """
+    Failure case.
+    Final state in failure case
+    """
     id = models.ExchangeHistory.FAILED
 
 
 class ReturningDepositState(ConfirmTransactionMixin,
                             State):
-
+    """
+    Failure case.
+    State in which we has already created output transaction from platform
+    wallet to which user sent deposit and we are waiting to confirm out
+    transaction
+    """
     id = models.ExchangeHistory.RETURNING_DEPOSIT
     next_state = FailedState
     trx_attr = 'transaction_output'
@@ -329,6 +377,12 @@ class ReturningDepositState(ConfirmTransactionMixin,
 class InsufficientDepositState(CreateTransferMixin,
                                State,
                                SetTransactionMixin):
+    """
+    Failure case.
+    State in which user has already sent deposit to platform wallet but the
+    amount appears insufficient and we want to abort exchange operation and
+    send user money back
+    """
 
     id = models.ExchangeHistory.INSUFFICIENT_DEPOSIT
     model = models.OutPutTransaction
@@ -355,6 +409,11 @@ class InsufficientDepositState(CreateTransferMixin,
 # Success states cases
 
 class DepositPaidState(State):
+    """
+    Successful case.
+    State in which user has already sent deposit to platform wallet and the
+    amount appears sufficient
+    """
     id = models.ExchangeHistory.DEPOSIT_PAID
 
     @classmethod
@@ -367,11 +426,21 @@ class DepositPaidState(State):
 
 
 class ClosedState(State):
+    """
+    Successful case.
+    Final state in successfully direction
+    """
     id = models.ExchangeHistory.CLOSED
 
 
 class OutgoingRunningState(ConfirmTransactionMixin,
                            State):
+
+    """
+    Successful case.
+    State in which we has already created output transaction from platform
+    and we are waiting to confirm out transaction
+    """
     id = models.ExchangeHistory.OUTGOING_RUNNING
     trx_attr = 'transaction_output'
     next_state = ClosedState
@@ -380,6 +449,13 @@ class OutgoingRunningState(ConfirmTransactionMixin,
 class CreatingOutGoingState(CreateTransferMixin,
                             State,
                             SetTransactionMixin):
+    """
+    Successful case.
+    State in which we set output transaction to exchange object and
+    creating money transfer by external service "Transactions".
+    We must also set a transaction fee and fix the exchange rate of
+    the US dollar to the issue currency
+    """
 
     id = models.ExchangeHistory.CREATING_OUTGOING_TRANSFER
     model = models.OutPutTransaction
