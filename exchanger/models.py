@@ -2,6 +2,7 @@ import uuid
 import typing
 from datetime import datetime
 from django.db import models
+from .managers import BaseManager
 
 
 class Base(models.Model):
@@ -14,9 +15,25 @@ class Base(models.Model):
                                       null=True,
                                       blank=True)
 
+    deleted_at = models.DateTimeField(verbose_name='Time then row was deleted',
+                                      null=True,
+                                      blank=True)
+
+    is_deleted = models.BooleanField(verbose_name='Is deleted row',
+                                     default=False,
+                                     db_index=True)
+
+    objects = BaseManager()
+    all_objects = models.Manager()
+
     def save(self, **kwargs):
         self.updated_at = datetime.now()
         super().save(**kwargs)
+
+    def delete(self, using=None, keep_parents=False):
+        self.deleted_at = datetime.now()
+        self.is_deleted = True
+        self.save()
 
     def __repr__(self):
         return "<Model{} ({})>".format(self.__class__.__name__, self.id)

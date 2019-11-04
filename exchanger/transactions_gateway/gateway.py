@@ -29,6 +29,15 @@ class TransactionsServiceGateway(BaseGateway):
             wallet_id: int = None,
             uuid: str = None
     ) -> typing.Union[dict, typing.Any]:
+        """
+        :param address_from: initiator of transfer money
+        :param address_to: to whom money will be transfer
+        :param currency_slug: currency slug of transfer
+        :param value: transfer amount
+        :param wallet_id: internal id of wallet
+        :param uuid: unique identifier of transaction
+        :return: response dict
+        """
 
         request_message = self.MODULE.CreateTransferRequest(
             transfer=transactions_pb2.Transfer(
