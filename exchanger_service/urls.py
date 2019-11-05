@@ -15,6 +15,7 @@ Including another URLconf
 """
 from django.conf.urls import url
 from django.contrib import admin
+from django.http import HttpResponse
 from django.urls import path
 from django.urls import include
 from rest_framework import routers
@@ -42,11 +43,12 @@ router.register('exchange', views.ExchangeHistoryViewSet, base_name='exchange')
 
 urlpatterns = [
 
+    path('', lambda x: HttpResponse('it works', status=200)),
     url(r'^swagger(?P<format>\.json|\.yaml)$',
         schema_view.without_ui(cache_timeout=0), name='schema-json'),
-    url(r'^swagger/$', schema_view.with_ui('swagger', cache_timeout=0),
+    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0),
         name='schema-swagger-ui'),
-    url(r'^redoc/$', schema_view.with_ui('redoc', cache_timeout=0),
+    path('redoc/', schema_view.with_ui('redoc', cache_timeout=0),
         name='schema-redoc'),
     path('admin/', admin.site.urls),
     path('api/', include(router.urls)),

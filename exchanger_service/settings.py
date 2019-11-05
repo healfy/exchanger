@@ -114,6 +114,8 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+GRPC_SERVER_PORT = '50051'
 GRPC_TIMEOUT = 10  # default timeout for grpc requests
 REMOTE_OPERATION_ATTEMPT_NUMBER = 3
 ONE_DAY_IN_SECONDS = 60 * 60 * 24
@@ -124,10 +126,12 @@ WALLETS_GW_ADDRESS = ''
 TRANSACTIONS_GW_ADDRESS = ''
 CURRENCY_GW_ADDRESS = ''
 MIN_FEE_LIMIT = 100  # in usd
+DEFAULT_FEE = 5
+EXTENDED_FEE = 10
 
 TRX_FEE_DICT = {
-    True: 10,  # in usd
-    False: 5,  # in usd
+    True: DEFAULT_FEE,  # in usd
+    False: EXTENDED_FEE,  # in usd
 }
 
 ETH_ADDRESS = os.getenv('ETH_COLD_ADDRESS', '0xF6E4709341426Dee13c9e9EaB6e4779b299CE2F7')

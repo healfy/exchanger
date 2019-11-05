@@ -3,6 +3,7 @@ import logging
 from datetime import datetime
 from concurrent import futures
 from contextlib import contextmanager
+from django.conf import settings
 from google.protobuf.json_format import MessageToDict
 from .base import BaseRepr
 from .serializers import TransactionDataSerializer
@@ -78,8 +79,8 @@ def serve_forever():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     exchanger_pb2_grpc.add_ExchangerServiceServicer_to_server(
         ExchangerService(), server)
-    server.add_insecure_port('[::]:50051')
+    server.add_insecure_port(f'[::]:{settings.GRPC_SERVER_PORT}')
     server.start()
-    logger.info('started GRPC server on port :50051')
+    logger.info(f'started GRPC server on port :{settings.GRPC_SERVER_PORT}')
     yield
     server.stop(0)

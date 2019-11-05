@@ -130,6 +130,7 @@ class TransactionBase(Base):
         if status == self.CONFIRMED:
             self.confirmed_at = time_confirmed if time_confirmed \
                 else datetime.now()
+            self.status = self.CONFIRMED
             self.save()
 
     class Meta:

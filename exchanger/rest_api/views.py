@@ -35,7 +35,16 @@ class ExchangeHistoryViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         return serializer.save()
 
+    @swagger_auto_schema(
+        deprecated=True
+    )
     def update(self, request, *args, **kwargs):
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    @swagger_auto_schema(
+        deprecated=True
+    )
+    def partial_update(self, request, *args, **kwargs):
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
     @swagger_auto_schema(
