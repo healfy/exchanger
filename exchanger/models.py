@@ -84,6 +84,8 @@ class TransactionBase(Base):
 
     ACTIVE_STATUTES = [SUCCESS, NEW, PENDING, NOT_FOUND]
 
+    BASE_FIELDS = ('deleted_at', 'updated_at', 'is_deleted')
+
     trx_hash = models.CharField(verbose_name='Transaction hash',
                                 max_length=100,
                                 db_index=True,
@@ -113,7 +115,7 @@ class TransactionBase(Base):
                                         null=True,
                                         blank=True,
                                         db_index=True)
-    currency = models.OneToOneField(Currency,
+    currency = models.ForeignKey(Currency,
                                     verbose_name='Transaction currency',
                                     on_delete=models.CASCADE,
                                     related_name='%(app_label)s_%(class)s_'

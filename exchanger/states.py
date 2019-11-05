@@ -37,6 +37,7 @@ class State(BaseRepr, ABC):
         return valid
 
     @classmethod
+    @utils.nested_commit_on_success
     def set(
             cls,
             exchange_object: models.ExchangeHistory,
@@ -279,6 +280,7 @@ class NewState(State,
 
     id = models.ExchangeHistory.NEW
     model = models.InputTransaction
+    trx_attr = 'transaction_input'
 
     @classmethod
     def set(

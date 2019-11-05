@@ -20,7 +20,7 @@ class BaseGateway(BaseRepr, ABC):
     """
 
     GW_ADDRESS: str
-    TIMEOUT: int
+    TIMEOUT: int = settings.GRPC_TIMEOUT
     BAD_RESPONSE_MSG: str
     ALLOWED_STATUTES: typing.Tuple[int]
     NAME: str
@@ -40,7 +40,7 @@ class BaseGateway(BaseRepr, ABC):
         :param request_method: client request method
         """
         if bad_response_msg:
-            self.bad_response_msg = bad_response_msg
+            self.BAD_RESPONSE_MSG = bad_response_msg
 
         if extend_statutes:
             self.ALLOWED_STATUTES += extend_statutes
@@ -60,11 +60,12 @@ class BaseGateway(BaseRepr, ABC):
                     )
                 return MessageToDict(response, preserving_proto_field_name=True)
             raise self.EXC_CLASS(str(
-                self.bad_response_msg + f" Got status "
-                                        f"{self.MODULE.ResponseStatus.Name(status)}: "
-                                        f"{response.status.description}.").replace("\n", " "))
+                self.BAD_RESPONSE_MSG +
+                f" Got status "
+                f"{self.MODULE.ResponseStatus.Name(status)}: "
+                f"{header.description}.").replace("\n", " "))
         except Exception as exc:
-            logger.error(f"{self.NAME} error",
+            self.LOGGER.error(f"{self.NAME} error",
                            {
                                "from": self.__class__.__name__,
                                "exc": exc,
