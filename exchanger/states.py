@@ -4,6 +4,7 @@ from abc import ABC
 from exchanger import models
 from exchanger import utils
 from exchanger.gateway import wallets_service_gw
+from exchanger.gateway import trx_service_gw
 from exchanger.gateway.base import BaseRepr
 
 logger = logging.getLogger('exchanger.log')
@@ -128,8 +129,25 @@ class State(BaseRepr, ABC):
 
 
 class SetWalletMixin:
+    """
+    Mixin class to set wallets on exchange object
+    Object have 2 types of wallet:
+
+    ingoing_wallet - Wallet for which we will expect a transfer from the user
+     Calculated from parameter from_currency
+
+    outgoing_wallet - Wallet from which we will transfer money in a
+     successful scenario
+     Calculated from parameter to_currency
+
+    """
     query = models.PlatformWallet.objects.filter(is_active=True)
     default = 'ethereum'
+
+    attrs = [
+        {'from_currency': 'ingoing_wallet'},
+        {'to_currency': 'outgoing_wallet'}
+    ]
 
     @classmethod
     def set_wallet(
@@ -137,12 +155,20 @@ class SetWalletMixin:
             instance: models.ExchangeHistory
     ) -> typing.NoReturn:
 
-        currency = instance.from_currency
-        slug = cls.default if not currency.is_bitcoin else currency.slug
-        instance.wallet = cls.query.get(currency__slug=slug)
+        for attr in cls.attrs:
+            for key, value in attr.items():
+                currency = getattr(instance, key)
+                slug = cls.default if not currency.is_bitcoin else currency.slug
+                setattr(instance, value, cls.query.get(currency__slug=slug))
 
 
 class SetTransactionMixin:
+    """
+    Mixin class for set transaction to exchange object
+
+    model: one of two existing model(InputTransaction, OutPutTransaction)
+
+    """
     model: typing.Type['models.TransactionBase']
     trx_attr: str
 
@@ -154,6 +180,26 @@ class SetTransactionMixin:
     ) -> typing.NoReturn:
 
         setattr(instance, cls.trx_attr, cls.model.objects.create(**params))
+
+
+class CreateTransferMixin:
+    next_state: typing.Type['State']
+    wallet_type: str
+
+    @classmethod
+    def _inner_transition(
+            cls,
+            exchange_object: models.ExchangeHistory
+    ) -> typing.Type['State']:
+
+        wallet_id = getattr(exchange_object, cls.wallet_type)
+        transfer = exchange_object.transaction_output.transfer_dict()
+
+        trx_service_gw.create_transfer(
+            wallet_id=wallet_id,
+            **transfer
+        )
+        return cls.next_state.set(exchange_object)
 
 
 class ConfirmTransactionMixin:
@@ -203,12 +249,13 @@ class NewState(State,
             cls,
             exchange_object: models.ExchangeHistory,
             **params
-    ):
+    ) -> typing.Type['State']:
+
         cls.set_wallet(exchange_object)
         cls.set_transaction(
             exchange_object,
             value=exchange_object.ingoing_amount,
-            to_address=exchange_object.wallet.address,
+            to_address=exchange_object.ingoing_wallet.address,
             from_address=exchange_object.from_address,
             currency=exchange_object.from_currency
         )
@@ -223,8 +270,8 @@ class NewState(State,
     ) -> typing.Type['State']:
 
         wallets_service_gw.put_on_monitoring(
-            wallet_id=exchange_object.wallet.external_id,
-            wallet_address=exchange_object.wallet.address,
+            wallet_id=exchange_object.ingoing_wallet.external_id,
+            wallet_address=exchange_object.ingoing_wallet.address,
             expected_currency=exchange_object.transaction_input.currency.slug,
             expected_address=exchange_object.transaction_input.from_address,
             expected_amount=exchange_object.transaction_input.value,
@@ -267,43 +314,6 @@ class WaitingDepositState(State):
 
 # Failed states case
 
-
-class InsufficientDepositState(State,
-                               SetTransactionMixin):
-
-    id = models.ExchangeHistory.INSUFFICIENT_DEPOSIT
-    model = models.OutPutTransaction
-    trx_attr = 'transaction_output'
-
-    @classmethod
-    def set(
-            cls,
-            exchange_object: models.ExchangeHistory,
-            **params
-    ) -> typing.Type['State']:
-
-        cls.set_transaction(
-            exchange_object,
-            value=exchange_object.transaction_input.value,
-            from_address=exchange_object.wallet.address,
-            to_address=exchange_object.from_address,
-            currency=exchange_object.transaction_input.currency
-        )
-        return super().set(exchange_object)
-
-    @classmethod
-    def _inner_transition(
-            cls,
-            exchange_object: models.ExchangeHistory
-    ) -> typing.Type['State']:
-        """
-        :TODO logic to connect with transaction server
-        :param exchange_object:
-        :return:
-        """
-        return ReturningDepositState.set(exchange_object)
-
-
 class FailedState(State):
     id = models.ExchangeHistory.FAILED
 
@@ -316,25 +326,14 @@ class ReturningDepositState(ConfirmTransactionMixin,
     trx_attr = 'transaction_output'
 
 
-# Success states cases
+class InsufficientDepositState(CreateTransferMixin,
+                               State,
+                               SetTransactionMixin):
 
-class DepositPaidState(State):
-    id = models.ExchangeHistory.DEPOSIT_PAID
-
-    @classmethod
-    def _inner_transition(
-            cls,
-            exchange_object: models.ExchangeHistory
-    ) -> typing.Type['State']:
-        return CreatingOutGoingState.set(exchange_object)
-
-
-class CreatingOutGoingState(State,
-                            SetTransactionMixin):
-
-    id = models.ExchangeHistory.CREATING_OUTGOING_TRANSFER
+    id = models.ExchangeHistory.INSUFFICIENT_DEPOSIT
     model = models.OutPutTransaction
     trx_attr = 'transaction_output'
+    next_state = ReturningDepositState
 
     @classmethod
     def set(
@@ -345,24 +344,26 @@ class CreatingOutGoingState(State,
 
         cls.set_transaction(
             exchange_object,
-            value=exchange_object.outgoing_amount,
-            from_address=exchange_object.wallet.address,
-            to_address=exchange_object.to_address,
-            currency=exchange_object.to_currency
+            value=exchange_object.transaction_input.value,
+            from_address=exchange_object.ingoing_wallet.address,
+            to_address=exchange_object.from_address,
+            currency=exchange_object.transaction_input.currency
         )
         return super().set(exchange_object)
+
+
+# Success states cases
+
+class DepositPaidState(State):
+    id = models.ExchangeHistory.DEPOSIT_PAID
 
     @classmethod
     def _inner_transition(
             cls,
             exchange_object: models.ExchangeHistory
     ) -> typing.Type['State']:
-        """
-        :TODO logic to connect with transaction server
-        :param exchange_object:
-        :return:
-        """
-        return OutgoingRunningState.set(exchange_object)
+
+        return CreatingOutGoingState.set(exchange_object)
 
 
 class ClosedState(State):
@@ -376,7 +377,34 @@ class OutgoingRunningState(ConfirmTransactionMixin,
     next_state = ClosedState
 
 
-def state_by_status(status: typing.Union[int, State]):
+class CreatingOutGoingState(CreateTransferMixin,
+                            State,
+                            SetTransactionMixin):
+
+    id = models.ExchangeHistory.CREATING_OUTGOING_TRANSFER
+    model = models.OutPutTransaction
+    trx_attr = 'transaction_output'
+    wallet_type = 'outgoing_wallet_id'
+    next_state = OutgoingRunningState
+
+    @classmethod
+    def set(
+            cls,
+            exchange_object: models.ExchangeHistory,
+            **params
+    ) -> typing.Type['State']:
+
+        cls.set_transaction(
+            exchange_object,
+            value=exchange_object.outgoing_amount,
+            from_address=exchange_object.outgoing_wallet.address,
+            to_address=exchange_object.to_address,
+            currency=exchange_object.to_currency
+        )
+        return super().set(exchange_object)
+
+
+def state_by_status(status: typing.Union[int, State]) -> typing.Type['State']:
     __CLASSES__ = {c.id: c for c in utils.all_subclasses(State)}
     return __CLASSES__[getattr(status, 'value', status)]
 

@@ -1,3 +1,6 @@
 [submodule "py-wallets"]
 	path = py-wallets
 	url = git@gitlab.com:bonum/py-wallets.git
+[submodule "transactions"]
+	path = transactions
+	url = git@gitlab.com:bonum/blockchain/transactions.git

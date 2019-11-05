@@ -22,10 +22,12 @@ class UpdateMixin:
     message = exchanger_pb2.UpdateResponse()
     serializer = TransactionDataSerializer
 
+    @nested_commit_on_success
     def action(self, data, ingoing=False):
         model = self.input_model if ingoing else self.output_model
         for trx in data:
-            model.objects.filter(uuid=trx['uuid']).update(
+            model.objects.filter(uuid=trx['uuid'],
+                                 status__in=model.ACTIVE_STATUTES).update(
                 hash=trx['trx_hash'],
                 confirmed_at=datetime.now()
             )
@@ -39,7 +41,6 @@ class UpdateMixin:
         serializer.is_valid(raise_exception=True)
         return serializer.data['transactions']
 
-    @nested_commit_on_success
     def process(self, request, ingoing=False):
         try:
             self._execute(request, ingoing=ingoing)

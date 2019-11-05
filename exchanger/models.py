@@ -3,11 +3,8 @@ import typing
 from datetime import datetime
 from django.db import models
 
-from exchanger.gateway.base import BaseRepr
 
-
-class Base(BaseRepr,
-           models.Model):
+class Base(models.Model):
 
     created_at = models.DateTimeField(verbose_name='Time of created',
                                       default=datetime.now,
@@ -20,6 +17,9 @@ class Base(BaseRepr,
     def save(self, **kwargs):
         self.updated_at = datetime.now()
         super().save(**kwargs)
+
+    def __repr__(self):
+        return "<Model{} ({})>".format(self.__class__.__name__, self.id)
 
     class Meta:
         abstract = True
@@ -64,6 +64,8 @@ class TransactionBase(Base):
         (PENDING, 'PENDING'),
         (NEW, 'NEW'),
     )
+
+    ACTIVE_STATUTES = [SUCCESS, NEW, PENDING, NOT_FOUND]
 
     trx_hash = models.CharField(verbose_name='Transaction hash',
                                 max_length=100,
@@ -135,6 +137,15 @@ class OutPutTransaction(TransactionBase):
 
     def __str__(self):
         return f'OutPutTransaction ({self.id}, {self.currency})'
+
+    def transfer_dict(self) -> typing.Dict:
+        return {
+            'address_from': self.from_address,
+            'address_to': self.to_address,
+            'currency_slug': self.currency.slug,
+            'value': str(self.value),
+            'uuid': str(self.uuid)
+        }
 
 
 class PlatformWallet(Base):
@@ -260,13 +271,21 @@ class ExchangeHistory(Base):
                                           max_digits=16,
                                           decimal_places=5)
 
-    wallet = models.ForeignKey(PlatformWallet,
-                               verbose_name='Which wallet does '
-                                            'the current transaction belong to',
-                               null=True,
-                               blank=True,
-                               on_delete=models.SET_NULL,
-                               related_name='exchange_history')
+    ingoing_wallet = models.ForeignKey(PlatformWallet,
+                                       verbose_name='Which wallet does the input '
+                                                    'transaction belong to',
+                                       null=True,
+                                       blank=True,
+                                       on_delete=models.SET_NULL,
+                                       related_name='exchange_history')
+
+    outgoing_wallet = models.ForeignKey(PlatformWallet,
+                                        verbose_name='Which wallet does the '
+                                                     'output transaction '
+                                                     'belong to',
+                                        null=True,
+                                        blank=True,
+                                        on_delete=models.SET_NULL)
 
     from_address = models.CharField(verbose_name='Address from we are '
                                                  'expect trx',
@@ -308,6 +327,7 @@ class ExchangeHistory(Base):
             'from_currency': self.from_currency.name,
             'to_currency': self.to_currency.name,
             'from_address': self.from_address,
+            'to_address': self.to_address,
             'ingoing_amount': self.ingoing_amount,
             'outgoing_amount': self.outgoing_amount,
             'user': self.user_email

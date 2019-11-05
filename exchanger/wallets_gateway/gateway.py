@@ -18,13 +18,15 @@ class WalletsServiceGateway(BaseGateway):
     EXC_CLASS = WalletsBadResponseException
     BAD_RESPONSE_MSG = 'Bad response from wallets gateway.'
 
-    def put_on_monitoring(self,
-                          wallet_id: int,
-                          wallet_address: str,
-                          expected_currency: str,
-                          expected_address: str,
-                          expected_amount: str,
-                          uuid: str) -> typing.Union[dict, typing.Any]:
+    def put_on_monitoring(
+            self,
+            wallet_id: int = None,
+            wallet_address: str = None,
+            expected_currency: str = None,
+            expected_address: str = None,
+            expected_amount: str = None,
+            uuid: str = None
+    ) -> typing.Union[dict, typing.Any]:
         """
         Method that send request to service wallet to start monitoring
         current wallet for incoming transaction from expected_address
