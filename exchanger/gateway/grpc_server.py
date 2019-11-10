@@ -29,11 +29,12 @@ class UpdateMixin:
         for trx in data:
             model.objects.filter(uuid=trx['uuid'],
                                  status__in=model.ACTIVE_STATUTES).update(
-                hash=trx['trx_hash'],
+                trx_hash=trx['trx_hash'],
                 value=trx['value'],
                 confirmed_at=datetime.now(),
                 status=model.CONFIRMED
             )
+        self.message.header.status = exchanger_pb2.SUCCESS
 
     def validate_request(self, request):
         return self._validate(request)

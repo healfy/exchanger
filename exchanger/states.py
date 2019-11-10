@@ -1,11 +1,15 @@
 import typing
 import logging
 from abc import ABC
+from decimal import Decimal
+from decimal import ROUND_HALF_UP
+from django.conf import settings
 from exchanger import models
 from exchanger import utils
 from exchanger.gateway import wallets_service_gw
 from exchanger.gateway import currency_service_gw
 from exchanger.gateway import trx_service_gw
+from exchanger.currencies_gateway import CurrenciesServiceGateway
 from exchanger.gateway.base import BaseRepr
 
 logger = logging.getLogger('exchanger.log')
@@ -53,7 +57,6 @@ class State(BaseRepr, ABC):
         return exchange_object.state
 
     @classmethod
-    @utils.nested_commit_on_success
     def make_inner_transition(
             cls,
             exchange_object: models.ExchangeHistory,
@@ -72,7 +75,6 @@ class State(BaseRepr, ABC):
                                                 stop_status=stop_status)
 
     @classmethod
-    @utils.nested_commit_on_success
     def make_outer_transition(
             cls,
             exchange_object: models.ExchangeHistory,
@@ -184,6 +186,55 @@ class SetTransactionMixin:
     ) -> typing.NoReturn:
 
         setattr(instance, cls.trx_attr, cls.model.objects.create(**params))
+
+
+class ValidateInputTransactionMixin:
+    """
+    Mixin class to validate input transaction value. If the user transfer us
+    a smaller value from the expected value, we must recalculate the commission,
+     as well as the size of the outgoing transfer
+    """
+
+    gw: CurrenciesServiceGateway
+
+    # noinspection PyUnresolvedReferences
+    @classmethod
+    def set(
+            cls,
+            exchange_object: models.ExchangeHistory,
+            **params
+    ) -> typing.Type['State']:
+
+        cls.validate(exchange_object)
+        return super().set(exchange_object, **params)
+
+    @classmethod
+    def validate(
+            cls,
+            exchange_object: models.ExchangeHistory
+    ) -> typing.NoReturn:
+
+        input_transaction = exchange_object.transaction_input
+
+        if not input_transaction.value == exchange_object.ingoing_amount:
+            slug = input_transaction.currency.slug
+            rates = {_['slug']: _['rate'] for _ in cls.gw.get_currencies()}
+            usd_value = (Decimal(rates.get(slug)) * input_transaction.value
+                         ).quantize(Decimal('0.001'), rounding=ROUND_HALF_UP)
+            fee = utils.calculate_fee(usd_value, rates, slug)
+            exchange_object.fee = fee
+            exchange_object.outgoing_amount = cls.calc_outgoing_amount(
+                usd_value, rates, fee, exchange_object.to_currency.slug)
+
+    @classmethod
+    def calc_outgoing_amount(
+            cls,
+            usd_amount: Decimal,
+            rates: typing.Dict,
+            fee: Decimal,
+            slug: str
+    ) -> Decimal:
+        return Decimal((usd_amount - fee) / rates.get(slug))
 
 
 class CreateTransferMixin:
@@ -335,19 +386,10 @@ class WaitingDepositState(State):
         trx = exchange_object.transaction_input
 
         if trx.status == models.TransactionBase.CONFIRMED:
-            if cls.validate_amount(trx, exchange_object):
+            if trx.value > settings.DEFAULT_FEE:
                 return DepositPaidState.set(exchange_object)
             return InsufficientDepositState.set(exchange_object)
         return cls
-
-    @classmethod
-    def validate_amount(
-            cls,
-            transaction:  models.InputTransaction,
-            exchange_object: models.ExchangeHistory,
-    ) -> bool:
-
-        return transaction.value == exchange_object.ingoing_amount
 
 
 # Failed states case
@@ -385,6 +427,7 @@ class InsufficientDepositState(CreateTransferMixin,
 
     id = models.ExchangeHistory.INSUFFICIENT_DEPOSIT
     model = models.OutPutTransaction
+    wallet_type = 'ingoing_wallet_id'
     trx_attr = 'transaction_output'
     next_state = ReturningDepositState
 
@@ -414,6 +457,26 @@ class DepositPaidState(State):
     amount appears sufficient
     """
     id = models.ExchangeHistory.DEPOSIT_PAID
+
+    @classmethod
+    def _inner_transition(
+            cls,
+            exchange_object: models.ExchangeHistory
+    ) -> typing.Type['State']:
+
+        return CalculatingState.set(exchange_object)
+
+
+class CalculatingState(ValidateInputTransactionMixin,
+                       State):
+    """
+    Successful case.
+    State in which we are validating input transaction amount and recalculating
+    out going amount and transaction fee if it necessary
+
+    """
+    id = models.ExchangeHistory.CALCULATING
+    gw = currency_service_gw
 
     @classmethod
     def _inner_transition(
@@ -487,7 +550,8 @@ def state_by_status(status: typing.Union[int, State]) -> typing.Type['State']:
 __STATES_TRANSACTIONS__ = {
     NewState: [WaitingDepositState],
     WaitingDepositState: [DepositPaidState, InsufficientDepositState],
-    DepositPaidState: [CreatingOutGoingState],
+    DepositPaidState: [CalculatingState],
+    CalculatingState: [CreatingOutGoingState],
     InsufficientDepositState: [ReturningDepositState],
     ReturningDepositState: [FailedState],
     CreatingOutGoingState: [OutgoingRunningState],

@@ -3,6 +3,7 @@ import typing
 from datetime import datetime
 from django.db import models
 from .managers import BaseManager
+from .utils import nested_commit_on_success
 
 
 class Base(models.Model):
@@ -209,15 +210,19 @@ class ExchangeHistory(Base):
                  *                     *
                  *                     *
                  *                     *
-     ****** RETURNING_DEPOSIT    CREATING_OUTGOING_TRANSFER
+                 *                     *
+     ****** RETURNING_DEPOSIT      CALCULATING ************
+                 *                     *
+                 *                     *
+    ****** DEPOSIT_RETURNED        CREATING_OUTGOING_TRANSFER
                  *                     *
                  *                     *
                  *                     *
-    ****** DEPOSIT_RETURNED       OUTGOING_RUNNING *******
+    ********* FAILED               OUTGOING_RUNNING *******
                  *                     *
                  *                     *
                  *                     *
-    ********* FAILED                CLOSED ****************
+    ****************                CLOSED ****************
     """
 
     UNKNOWN = 0
@@ -231,6 +236,7 @@ class ExchangeHistory(Base):
     FAILED = 8
     RETURNING_DEPOSIT = 9
     DEPOSIT_RETURNED = 10
+    CALCULATING = 11
 
     EXCHANGE_STATUTES = (
         (UNKNOWN, 'UNKNOWN STATUS'),
@@ -244,6 +250,7 @@ class ExchangeHistory(Base):
         (FAILED, 'FAILED EXCHANGE'),
         (RETURNING_DEPOSIT, 'RETURNING_DEPOSIT'),
         (DEPOSIT_RETURNED, 'DEPOSIT_RETURNED'),
+        (CALCULATING, 'CALCULATING'),
     )
 
     user_email = models.EmailField(verbose_name='Email of user')
@@ -321,6 +328,7 @@ class ExchangeHistory(Base):
         """
         return states.state_by_status(self.status)
 
+    @nested_commit_on_success
     def request_update(self, stop_status: int = None):
         """Update  state with state inner transition. Commit.
         Should use for initiative update without params.
@@ -328,6 +336,7 @@ class ExchangeHistory(Base):
         """
         self.state.make_inner_transition(self, stop_status=stop_status)
 
+    @nested_commit_on_success
     def outer_update(self, stop_status: int = None, **params):
         """Update loan state with state outer transition. Commit.
         Should use for update state with some result from asynchronous task.
