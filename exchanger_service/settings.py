@@ -72,7 +72,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'exchanger_service.wsgi.application'
-
+TEST_MODE = False
 
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
@@ -125,6 +125,7 @@ ONE_DAY_IN_SECONDS = 60 * 60 * 24
 WALLETS_GW_ADDRESS = 'localhost:50051'
 TRANSACTIONS_GW_ADDRESS = 'localhost:50051'
 CURRENCY_GW_ADDRESS = 'localhost:50051'
+BLOCKCHAIN_GW_ADDRESS = 'localhost:50051'
 MIN_FEE_LIMIT = 100  # in usd
 DEFAULT_FEE = 5
 EXTENDED_FEE = 10
