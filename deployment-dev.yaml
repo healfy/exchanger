@@ -1,0 +1,173 @@
+---
+# ingress
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: exchanger-ing-dev
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+    - host: exchanger-api.bonum.credit
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: exchanger-dev
+              servicePort: 80
+
+---
+# service
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: exchanger-dev
+    track: dev
+    tier: backend
+  name: exchanger-dev
+spec:
+  selector:
+    app: exchanger-dev
+    track: dev
+    tier: backend
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8000
+      name: rest
+
+---
+
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app: exchanger-dev
+    track: dev
+    tier: backend
+  name: exchanger-dev
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: exchanger-dev
+      track: dev
+      tier: backend
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: exchanger-dev
+        track: dev
+        tier: backend
+    spec:
+      terminationGracePeriodSeconds: 15
+      containers:
+        - image: <<__your_registry_ip_address__>>bonum-exchanger:dev
+          imagePullPolicy: "Always"
+          name: exchanger
+          command: ["/app/run.sh"]
+          env:
+          - name: MAILGUN_ACCESS_KEY
+            valueFrom:
+              secretKeyRef:
+                name: mailgun-key-dev
+                key: key
+          - name: VERSION
+            value: "COMMIT_HASH"
+          - name: PGHOST
+            valueFrom:
+              secretKeyRef:
+                name: exchanger-db-dev
+                key: host
+          - name: PGUSER
+            valueFrom:
+              secretKeyRef:
+                name: exchanger-db-dev
+                key: username
+          - name: PGPASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: exchanger-db-dev
+                key: password
+          - name: BTC_COLD_ADDRESS
+            valueFrom:
+              secretKeyRef:
+                name: btc-testnet-creds
+                key: address
+          - name: ETH_COLD_ADDRESS
+            valueFrom:
+              secretKeyRef:
+                name: goerli-creds
+                key: address
+          - name: BTC_EXTERNAL_ID
+            valueFrom:
+              secretKeyRef:
+                name: btc-testnet-creds
+                key: external_id
+          - name: ETH_EXTERNAL_ID
+            valueFrom:
+              secretKeyRef:
+                name: goerli-creds
+                key: external_id
+          - name: PGDATABASE
+            valueFrom:
+              secretKeyRef:
+                name: exchanger-db-dev
+                key: database
+          volumeMounts:
+            - mountPath: /bonum_logs
+              name: bonum-logs-dev
+            - mountPath: /app
+              name: code-storage-exchanger-dev
+            - mountPath: /tmp/exchanger-static
+              name: static-exchanger-dev
+            - name: config
+              mountPath: "/etc/bonum-exchanger"
+              readOnly: true
+      volumes:
+        - name: bonum-logs-dev
+          persistentVolumeClaim:
+            claimName: bonum-logs-pv-claim-dev
+        - name: code-storage-exchanger-dev
+          persistentVolumeClaim:
+            claimName: code-storage-exchanger-pv-claim-dev
+        - name: config
+          configMap:
+            name: exchanger-local-settings-dev
+        - name: static-exchanger-dev
+          persistentVolumeClaim:
+            claimName: static-exchanger-pv-claim-dev
+
+---
+# configmap
+apiVersion: v1
+kind: ConfigMap
+data:
+  local_settings.py: |
+    import os
+    ANYMAIL = {
+        "MAILGUN_API_KEY": os.environ.get('MAILGUN_ACCESS_KEY'),
+        "MAILGUN_SENDER_DOMAIN": 'mail.bonumchain.com',
+    }
+    WALLETS_GW_ADDRESS = 'wallets-dev:50051'
+    TRANSACTIONS_GW_ADDRESS = 'transactions-dev:50051'
+    CURRENCY_GW_ADDRESS = 'currencies-dev:50051'
+    BLOCKCHAIN_GW_ADDRESS = 'blockchain-gateway-dev:50051'
+    EMAIL_BACKEND = "anymail.backends.mailgun.EmailBackend"
+    DEFAULT_FROM_EMAIL = "dev@email.bonumchain.com"
+    STATIC_URL = 'http://static.bonum.credit/exchanger/'
+    GRPC_SERVER_PORT = '50051'
+metadata:
+  name: exchanger-local-settings-dev
+  labels:
+    app: exchanger-dev
+    tier: backend
+    track: dev

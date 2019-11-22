@@ -212,10 +212,14 @@ LOGGING = {
     }
 }
 
-try:
-    from .local_settings import *
-except Exception as e:
-    print("Local settings file is not defined or is not correct. \n\
-            Please create local_settings.py file in settings folder")
-    print(e)
+import sys
+sys.path.append('/etc/bonum-exchanger')
+sys.path.append(BASE_DIR + '/exchanger/rpc')
 
+for path in (BASE_DIR, '/etc/bonum-exchanger'):
+    if os.path.exists(os.path.join(path, 'local_settings.py')):
+        from local_settings import *
+
+if os.path.exists('exchanger_service/local_settings.py') or \
+        os.path.exists('py-exchanger/exchanger_service/local_settings.py'):
+    from exchanger_service.local_settings import *

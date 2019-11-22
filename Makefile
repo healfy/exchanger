@@ -1,22 +1,14 @@
 SERVICE=exchanger
 PY_DIR=exchanger
 
-WLT_PROTO = py-wallets/proto
-WLT_PROTO_F = py-wallets/proto/wallets.proto
-
-TRX_PROTO = transactions/proto
-TRX_PROTO_F = transactions/proto/transactions.proto
-
-CUR_PROTO = py-currencies/proto
-CUR_PROTO_F = py-currencies/proto/currencies.proto
+WLT_PROTO_F = proto/wallets.proto
+TRX_PROTO_F = proto/transactions.proto
+CUR_PROTO_F = proto/currencies.proto
 
 PROTO_PATH=proto/exchanger.proto
 PROTOC_INCLUDE = \
 	-I=/usr/local/include \
 	-I proto/ \
-	-I $(WLT_PROTO) \
-	-I $(TRX_PROTO) \
-	-I $(CUR_PROTO) \
 	-I${GOPATH}/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis \
 	-I${GOPATH}/src/github.com/grpc-ecosystem/grpc-gateway
 

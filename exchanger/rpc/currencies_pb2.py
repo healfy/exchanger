@@ -23,8 +23,8 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='currencies.proto',
   package='currencies',
   syntax='proto3',
-  serialized_options=_b('Z\ncurrencies\222AK\022\031\n\022Currencies service2\0031.0\"\007/api/v1*\001\0012\020application/json:\020application/json'),
-  serialized_pb=_b('\n\x10\x63urrencies.proto\x12\ncurrencies\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1cgoogle/api/annotations.proto\x1a,protoc-gen-swagger/options/annotations.proto\"Q\n\x0eResponseHeader\x12*\n\x06status\x18\x01 \x01(\x0e\x32\x1a.currencies.ResponseStatus\x12\x13\n\x0b\x64\x65scription\x18\x02 \x01(\t\"\x10\n\x0eHealthzRequest\"=\n\x0fHealthzResponse\x12*\n\x06header\x18\x01 \x01(\x0b\x32\x1a.currencies.ResponseHeader\"X\n\x11\x43urrenciesRequest\x12\x14\n\x0c\x63urrencySlug\x18\x01 \x01(\t\x12-\n\ttimestamp\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\"j\n\x12\x43urrenciesResponse\x12*\n\x06header\x18\x02 \x01(\x0b\x32\x1a.currencies.ResponseHeader\x12(\n\ncurrencies\x18\x01 \x03(\x0b\x32\x14.currencies.Currency\"\x9d\x02\n\x08\x43urrency\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x10\n\x08\x66ullname\x18\x03 \x01(\t\x12\x0c\n\x04rate\x18\x04 \x01(\t\x12-\n\x0c\x63oefficients\x18\x05 \x03(\x0b\x32\x17.currencies.Coefficient\x12\x0c\n\x04slug\x18\x06 \x01(\t\x12.\n\x05rates\x18\x07 \x03(\x0b\x32\x1f.currencies.Currency.RatesEntry\x12\x0e\n\x06symbol\x18\x08 \x01(\t\x12,\n\x08\x64\x61tetime\x18\t \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x1a,\n\nRatesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\xb1\x01\n\x0b\x43oefficient\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x0c\n\x04\x64\x61ys\x18\x02 \x01(\x05\x12\x1e\n\x16\x63ollateral_coefficient\x18\x03 \x01(\t\x12\x1d\n\x15mandatory_coefficient\x18\x04 \x01(\t\x12\x1b\n\x13warning_coefficient\x18\x05 \x01(\t\x12,\n\x08\x64\x61tetime\x18\x06 \x01(\x0b\x32\x1a.google.protobuf.Timestamp*J\n\x0eResponseStatus\x12\x0b\n\x07NOT_SET\x10\x00\x12\x0b\n\x07SUCCESS\x10\x01\x12\t\n\x05\x45RROR\x10\x02\x12\x13\n\x0fINVALID_REQUEST\x10\x03\x32\xed\x01\n\x11\x43urrenciesService\x12R\n\x06Health\x12\x1a.currencies.HealthzRequest\x1a\x1b.currencies.HealthzResponse\"\x0f\x82\xd3\xe4\x93\x02\t\x12\x07/health\x12\x83\x01\n\x03Get\x12\x1d.currencies.CurrenciesRequest\x1a\x1e.currencies.CurrenciesResponse\"=\x82\xd3\xe4\x93\x02\x37\x12\x0b/currenciesZ(\x12&/currencies/{currencySlug}/{timestamp}BZZ\ncurrencies\x92\x41K\x12\x19\n\x12\x43urrencies service2\x03\x31.0\"\x07/api/v1*\x01\x01\x32\x10\x61pplication/json:\x10\x61pplication/jsonb\x06proto3')
+  serialized_options=_b('Z\ncurrencies\222AH\022\031\n\022Currencies service2\0031.0\"\004/api*\001\0012\020application/json:\020application/json'),
+  serialized_pb=_b('\n\x10\x63urrencies.proto\x12\ncurrencies\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1cgoogle/api/annotations.proto\x1a,protoc-gen-swagger/options/annotations.proto\"Q\n\x0eResponseHeader\x12*\n\x06status\x18\x01 \x01(\x0e\x32\x1a.currencies.ResponseStatus\x12\x13\n\x0b\x64\x65scription\x18\x02 \x01(\t\"\x10\n\x0eHealthzRequest\"=\n\x0fHealthzResponse\x12*\n\x06header\x18\x01 \x01(\x0b\x32\x1a.currencies.ResponseHeader\"X\n\x11\x43urrenciesRequest\x12\x14\n\x0c\x63urrencySlug\x18\x01 \x01(\t\x12-\n\ttimestamp\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\"j\n\x12\x43urrenciesResponse\x12*\n\x06header\x18\x02 \x01(\x0b\x32\x1a.currencies.ResponseHeader\x12(\n\ncurrencies\x18\x01 \x03(\x0b\x32\x14.currencies.Currency\"\x9d\x02\n\x08\x43urrency\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x10\n\x08\x66ullname\x18\x03 \x01(\t\x12\x0c\n\x04rate\x18\x04 \x01(\t\x12-\n\x0c\x63oefficients\x18\x05 \x03(\x0b\x32\x17.currencies.Coefficient\x12\x0c\n\x04slug\x18\x06 \x01(\t\x12.\n\x05rates\x18\x07 \x03(\x0b\x32\x1f.currencies.Currency.RatesEntry\x12\x0e\n\x06symbol\x18\x08 \x01(\t\x12,\n\x08\x64\x61tetime\x18\t \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x1a,\n\nRatesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\xb1\x01\n\x0b\x43oefficient\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x0c\n\x04\x64\x61ys\x18\x02 \x01(\x05\x12\x1e\n\x16\x63ollateral_coefficient\x18\x03 \x01(\t\x12\x1d\n\x15mandatory_coefficient\x18\x04 \x01(\t\x12\x1b\n\x13warning_coefficient\x18\x05 \x01(\t\x12,\n\x08\x64\x61tetime\x18\x06 \x01(\x0b\x32\x1a.google.protobuf.Timestamp*J\n\x0eResponseStatus\x12\x0b\n\x07NOT_SET\x10\x00\x12\x0b\n\x07SUCCESS\x10\x01\x12\t\n\x05\x45RROR\x10\x02\x12\x13\n\x0fINVALID_REQUEST\x10\x03\x32\xf6\x01\n\x11\x43urrenciesService\x12U\n\x06Health\x12\x1a.currencies.HealthzRequest\x1a\x1b.currencies.HealthzResponse\"\x12\x82\xd3\xe4\x93\x02\x0c\x12\n/v1/health\x12\x89\x01\n\x03Get\x12\x1d.currencies.CurrenciesRequest\x1a\x1e.currencies.CurrenciesResponse\"C\x82\xd3\xe4\x93\x02=\x12\x0e/v1/currenciesZ+\x12)/v1/currencies/{currencySlug}/{timestamp}BWZ\ncurrencies\x92\x41H\x12\x19\n\x12\x43urrencies service2\x03\x31.0\"\x04/api*\x01\x01\x32\x10\x61pplication/json:\x10\x61pplication/jsonb\x06proto3')
   ,
   dependencies=[google_dot_protobuf_dot_timestamp__pb2.DESCRIPTOR,google_dot_api_dot_annotations__pb2.DESCRIPTOR,protoc__gen__swagger_dot_options_dot_annotations__pb2.DESCRIPTOR,])
 
@@ -512,7 +512,7 @@ _CURRENCIESSERVICE = _descriptor.ServiceDescriptor(
   index=0,
   serialized_options=None,
   serialized_start=1048,
-  serialized_end=1285,
+  serialized_end=1294,
   methods=[
   _descriptor.MethodDescriptor(
     name='Health',
@@ -521,7 +521,7 @@ _CURRENCIESSERVICE = _descriptor.ServiceDescriptor(
     containing_service=None,
     input_type=_HEALTHZREQUEST,
     output_type=_HEALTHZRESPONSE,
-    serialized_options=_b('\202\323\344\223\002\t\022\007/health'),
+    serialized_options=_b('\202\323\344\223\002\014\022\n/v1/health'),
   ),
   _descriptor.MethodDescriptor(
     name='Get',
@@ -530,7 +530,7 @@ _CURRENCIESSERVICE = _descriptor.ServiceDescriptor(
     containing_service=None,
     input_type=_CURRENCIESREQUEST,
     output_type=_CURRENCIESRESPONSE,
-    serialized_options=_b('\202\323\344\223\0027\022\013/currenciesZ(\022&/currencies/{currencySlug}/{timestamp}'),
+    serialized_options=_b('\202\323\344\223\002=\022\016/v1/currenciesZ+\022)/v1/currencies/{currencySlug}/{timestamp}'),
   ),
 ])
 _sym_db.RegisterServiceDescriptor(_CURRENCIESSERVICE)
