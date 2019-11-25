@@ -2,5 +2,5 @@
 
 python manage.py makemigrations
 python manage.py migrate
-python manage.py collectstatic
+echo "yes" | python manage.py collectstatic
 uwsgi --ini conf/uwsgi.ini
