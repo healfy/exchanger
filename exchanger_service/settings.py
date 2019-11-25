@@ -159,6 +159,7 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 LOGFILE = 'exchanger.log'
+STATIC_ROOT = '/tmp/exchanger-static'
 
 LOGGING = {
     'version': 1,
