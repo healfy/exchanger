@@ -56,3 +56,9 @@ class ExchangeHistorySerializer(serializers.ModelSerializer):
                     f'You address {data[f"{attr}_address"]} is not valid'
                 )
         return data
+
+
+class SettingsSerializer(serializers.Serializer):
+    default = serializers.IntegerField()
+    extended = serializers.IntegerField()
+    limit = serializers.IntegerField()

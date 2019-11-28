@@ -6,6 +6,7 @@ from rest_framework import status
 from rest_framework.decorators import action
 from drf_yasg.utils import swagger_auto_schema
 from exchanger import states
+from exchanger.currencies_gateway.serializers import CurrencySerializer
 from exchanger.gateway import currency_service_gw
 from exchanger.models import (
     ExchangeHistory
@@ -13,6 +14,7 @@ from exchanger.models import (
 
 from .serializers import (
     ExchangeHistorySerializer,
+    SettingsSerializer
 )
 
 
@@ -58,19 +60,31 @@ class ExchangeHistoryViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
+    @swagger_auto_schema(
+        deprecated=True
+    )
+    def list(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            return super().list(request, *args, **kwargs)
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
 
 class CurrencyView(APIView):
 
+    @swagger_auto_schema(responses={200: CurrencySerializer})
     def get(self, request, format=None):
         # TODO: add filter like in auth service
         return Response(currency_service_gw.get_currencies())
 
 
 class SettingsView(APIView):
+    serializer = SettingsSerializer
 
+    @swagger_auto_schema(responses={status.HTTP_200_OK: SettingsSerializer})
     def get(self, request):
-        return Response(data={
+        data = self.serializer(data={
             'default': settings.DEFAULT_FEE,
             'extended': settings.EXTENDED_FEE,
             'limit': settings.MIN_FEE_LIMIT,
-                              })
+                              }).initial_data
+        return Response(data)
