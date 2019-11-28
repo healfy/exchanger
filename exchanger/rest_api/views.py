@@ -1,3 +1,4 @@
+from django.conf import settings
 from rest_framework import viewsets
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -61,4 +62,15 @@ class ExchangeHistoryViewSet(viewsets.ModelViewSet):
 class CurrencyView(APIView):
 
     def get(self, request, format=None):
+        # TODO: add filter like in auth service
         return Response(currency_service_gw.get_currencies())
+
+
+class SettingsView(APIView):
+
+    def get(self, request):
+        return Response(data={
+            'default': settings.DEFAULT_FEE,
+            'extended': settings.EXTENDED_FEE,
+            'limit': settings.MIN_FEE_LIMIT,
+                              })

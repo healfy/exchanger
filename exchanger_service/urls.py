@@ -54,4 +54,5 @@ urlpatterns = [
     path('api/', include(router.urls)),
     path('api/', include('rest_framework.urls', namespace='rest_framework')),
     path('api/currency/', views.CurrencyView.as_view()),
+    path('api/settings/', views.SettingsView.as_view()),
 ]
