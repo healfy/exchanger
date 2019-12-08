@@ -548,6 +548,7 @@ def state_by_status(status: typing.Union[int, State]) -> typing.Type['State']:
 
 
 __STATES_TRANSACTIONS__ = {
+    UnknownState: [NewState],
     NewState: [WaitingDepositState],
     WaitingDepositState: [DepositPaidState, InsufficientDepositState],
     DepositPaidState: [CalculatingState],

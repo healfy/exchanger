@@ -47,11 +47,11 @@ class Command(BaseCommand):
         PlatformWallet.objects.get_or_create(
             address=settings.BTC_ADDRESS,
             currency=bitcoin,
-            external_id=settings.BTC_EXTERNAL_ID
+            external_id=int(settings.BTC_EXTERNAL_ID)
 
         )
         PlatformWallet.objects.get_or_create(
             address=settings.ETH_ADDRESS,
             currency=ethereum,
-            external_id=settings.ETH_EXTERNAL_ID
+            external_id=int(settings.ETH_EXTERNAL_ID)
         )
