@@ -1,3 +1,4 @@
+from decimal import Decimal
 from django.conf import settings
 from rest_framework import serializers
 from exchanger.models import (
@@ -56,6 +57,23 @@ class ExchangeHistorySerializer(serializers.ModelSerializer):
                     f'You address {data[f"{attr}_address"]} is not valid'
                 )
         return data
+
+    def validate_fee(self, fee: Decimal) -> Decimal:
+        if fee <= 0 or fee < settings.DEFAULT_FEE:
+            raise serializers.ValidationError(f'Invalid fee amount')
+        return fee
+
+    def validate_ingoing_amount(self, amount):
+        if amount <= 0:
+            raise serializers.ValidationError(f'Invalid ingoing '
+                                              f'amount {amount}')
+        return amount
+
+    def validate_outgoing_amount(self, amount):
+        if amount <= 0:
+            raise serializers.ValidationError(f'Invalid outgoing amount'
+                                              f' {amount}')
+        return amount
 
 
 class SettingsSerializer(serializers.Serializer):

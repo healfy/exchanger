@@ -1,6 +1,6 @@
 from django.test import TestCase
 from uuid import uuid4
-
+from decimal import Decimal
 from django.conf import settings
 from unittest.mock import patch
 from exchanger.states import wallets_service_gw
@@ -194,7 +194,6 @@ class TestExchangerApi(TestBase):
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(resp.json()['user_email'], exc_test)
 
-
     def test_invalid_email_cases_2(self):
         exc_test = ['Enter a valid email address.']
         self.data.update({
@@ -208,3 +207,108 @@ class TestExchangerApi(TestBase):
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(resp.json()['user_email'], exc_test)
 
+    def test_invalid_fee_case_1(self):
+        fee = 0
+        exc_text = [f'Invalid fee amount']
+        self.data.update({
+            'from_currency': self.eth_wallet.currency.id,
+            'to_currency': self.eth_wallet.currency.id,
+            'ingoing_amount': '10',
+            'outgoing_amount': '9.81',
+            'fee': fee
+        })
+        resp = self.client.post('/api/exchange/', data=self.data)
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.json()['fee'], exc_text)
+
+    def test_invalid_fee_case_2(self):
+        fee = '4.12'
+        exc_text = [f'Invalid fee amount']
+        self.data.update({
+            'from_currency': self.eth_wallet.currency.id,
+            'to_currency': self.eth_wallet.currency.id,
+            'ingoing_amount': '10',
+            'outgoing_amount': '9.81',
+            'fee': fee
+        })
+        resp = self.client.post('/api/exchange/', data=self.data)
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.json()['fee'], exc_text)
+
+    def test_invalid_from_currency_case_1(self):
+        exc_text = ['This field is required.']
+
+        self.data.update({
+            'to_currency': self.eth_wallet.currency.id,
+            'ingoing_amount': '10',
+            'outgoing_amount': '9.81'
+        })
+        resp = self.client.post('/api/exchange/', data=self.data)
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.json()['from_currency'], exc_text)
+
+    def test_invalid_from_currency_case_2(self):
+        pk = 21
+        exc_text = [f'Invalid pk "{pk}" - object does not exist.']
+
+        self.data.update({
+            'to_currency': self.eth_wallet.currency.id,
+            'from_currency': pk,
+            'ingoing_amount': '10',
+            'outgoing_amount': '9.81'
+        })
+        resp = self.client.post('/api/exchange/', data=self.data)
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.json()['from_currency'], exc_text)
+
+    def test_invalid_to_currency_case_1(self):
+        exc_text = ['This field is required.']
+
+        self.data.update({
+            'from_currency': self.eth_wallet.currency.id,
+            'ingoing_amount': '10',
+            'outgoing_amount': '9.81'
+        })
+        resp = self.client.post('/api/exchange/', data=self.data)
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.json()['to_currency'], exc_text)
+
+    def test_invalid_to_currency_case_2(self):
+        pk = 21
+        exc_text = [f'Invalid pk "{pk}" - object does not exist.']
+
+        self.data.update({
+            'from_currency': self.eth_wallet.currency.id,
+            'to_currency': pk,
+            'ingoing_amount': '10',
+            'outgoing_amount': '9.81'
+        })
+        resp = self.client.post('/api/exchange/', data=self.data)
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.json()['to_currency'], exc_text)
+
+    def test_invalid_outgoing_amount(self):
+        amount = 0
+        exc_text = [f'Invalid outgoing amount 0.00000']
+        self.data.update({
+            'from_currency': self.eth_wallet.currency.id,
+            'to_currency': self.eth_wallet.currency.id,
+            'ingoing_amount': '10',
+            'outgoing_amount': amount,
+        })
+        resp = self.client.post('/api/exchange/', data=self.data)
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.json()['outgoing_amount'], exc_text)
+
+    def test_invalid_ingoing_amount(self):
+        amount = 0
+        exc_text = [f'Invalid ingoing amount 0.00000']
+        self.data.update({
+            'from_currency': self.eth_wallet.currency.id,
+            'to_currency': self.eth_wallet.currency.id,
+            'ingoing_amount': amount,
+            'outgoing_amount': '2.21',
+        })
+        resp = self.client.post('/api/exchange/', data=self.data)
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.json()['ingoing_amount'], exc_text)
