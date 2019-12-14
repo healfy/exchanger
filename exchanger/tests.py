@@ -1,11 +1,15 @@
 from django.test import TestCase
 from uuid import uuid4
-from decimal import Decimal
 from django.conf import settings
 from unittest.mock import patch
 from exchanger.states import wallets_service_gw
 
-from exchanger.models import Currency, PlatformWallet, ExchangeHistory
+from exchanger.models import (
+    Currency,
+    PlatformWallet,
+    ExchangeHistory,
+    TransactionBase
+)
 from rest_framework.test import APIClient
 from exchanger import states
 
@@ -312,3 +316,192 @@ class TestExchangerApi(TestBase):
         resp = self.client.post('/api/exchange/', data=self.data)
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(resp.json()['ingoing_amount'], exc_text)
+
+
+class TestStates(TestBase):
+
+    def setUp(self) -> None:
+        super().setUp()
+        self.email = 'test_email@mail.ru'
+        self.to_address = uuid4()
+        self.from_address = uuid4()
+        data = {
+            'from_currency': self.btc_wallet.currency,
+            'to_currency': self.btc_wallet.currency,
+            'ingoing_amount': '1',
+            'outgoing_amount': '0.92',
+            'user_email': self.email,
+            'from_address': str(self.from_address),
+            'to_address': str(self.to_address),
+            'fee': settings.DEFAULT_FEE,
+        }
+
+        self.exchanger = ExchangeHistory.objects.create(**data)
+
+    def update_obj(self, count):
+        for i in range(count):
+            self.exchanger.request_update()
+        self.exchanger.refresh_from_db()
+
+    def test_unknown_state(self):
+        self.assertEqual(self.exchanger.state, states.UnknownState)
+        self.assertIsNone(self.exchanger.outgoing_wallet)
+        self.assertIsNone(self.exchanger.ingoing_wallet)
+        self.assertIsNone(self.exchanger.transaction_input)
+        self.assertIsNone(self.exchanger.transaction_output)
+
+    def test_issued_state(self):
+        self.exchanger.request_update(stop_status=ExchangeHistory.NEW)
+        self.exchanger.refresh_from_db()
+        self.assertEqual(self.exchanger.state, states.NewState)
+        self.assertIsNotNone(self.exchanger.outgoing_wallet)
+        self.assertIsNotNone(self.exchanger.ingoing_wallet)
+
+    @patch.object(wallets_service_gw, '_base_request', return_value={})
+    def test_waiting_deposit_state(self, *args):
+        self.update_obj(2)
+        self.assertEqual(self.exchanger.state, states.WaitingDepositState)
+        self.assertIsNotNone(self.exchanger.transaction_input)
+        trx = self.exchanger.transaction_input
+        self.assertEqual(trx.from_address, self.exchanger.from_address)
+        self.assertEqual(trx.to_address, self.exchanger.ingoing_wallet.address)
+        self.assertEqual(trx.currency, self.exchanger.from_currency)
+        self.assertIsNone(trx.trx_hash)
+
+    @patch.object(wallets_service_gw, '_base_request', return_value={})
+    @patch.object(states.WaitingDepositState, 'validate_value',
+                  return_value=True)
+    def test_deposit_payed_state(self, *args):
+        self.update_obj(2)
+        trx = self.exchanger.transaction_input
+        trx.trx_hash = uuid4()
+        trx.status = TransactionBase.CONFIRMED
+        trx.save()
+        self.exchanger.request_update(stop_status=ExchangeHistory.DEPOSIT_PAID)
+        self.exchanger.refresh_from_db()
+        self.assertEqual(self.exchanger.state, states.DepositPaidState)
+
+    @patch.object(wallets_service_gw, '_base_request', return_value={})
+    @patch.object(states.WaitingDepositState, 'validate_value',
+                  return_value=True)
+    def test_calculating_state(self, *args):
+        self.update_obj(2)
+        trx = self.exchanger.transaction_input
+        trx.trx_hash = uuid4()
+        trx.status = TransactionBase.CONFIRMED
+        trx.save()
+        self.exchanger.request_update(stop_status=ExchangeHistory.CALCULATING)
+        self.exchanger.refresh_from_db()
+        self.assertEqual(self.exchanger.state, states.CalculatingState)
+
+    @patch.object(wallets_service_gw, '_base_request', return_value={})
+    @patch.object(states.WaitingDepositState, 'validate_value',
+                  return_value=True)
+    def test_create_outgoing_state(self, *args):
+        self.update_obj(2)
+        trx = self.exchanger.transaction_input
+        trx.trx_hash = uuid4()
+        trx.status = TransactionBase.CONFIRMED
+        trx.save()
+        self.exchanger.request_update(
+            stop_status=ExchangeHistory.CREATING_OUTGOING_TRANSFER)
+        self.exchanger.refresh_from_db()
+        self.assertEqual(self.exchanger.state, states.CreatingOutGoingState)
+        trx_out = self.exchanger.transaction_output
+        self.assertEqual(trx_out.to_address, self.exchanger.to_address)
+        self.assertEqual(trx_out.value, self.exchanger.outgoing_amount)
+        self.assertEqual(trx_out.currency, self.exchanger.to_currency)
+
+    @patch.object(wallets_service_gw, '_base_request', return_value={})
+    @patch.object(states.CreatingOutGoingState.gw, 'create_transfer',
+                  return_value={})
+    @patch.object(states.WaitingDepositState, 'validate_value',
+                  return_value=True)
+    def test_outgoing_running_state(self, *args):
+        self.update_obj(2)
+        trx = self.exchanger.transaction_input
+        trx.trx_hash = uuid4()
+        trx.status = TransactionBase.CONFIRMED
+        trx.save()
+        self.exchanger.request_update(
+            stop_status=ExchangeHistory.CREATING_OUTGOING_TRANSFER)
+        self.exchanger.refresh_from_db()
+        self.exchanger.request_update(
+            stop_status=ExchangeHistory.OUTGOING_RUNNING)
+        self.assertEqual(self.exchanger.state, states.OutgoingRunningState)
+
+    @patch.object(wallets_service_gw, '_base_request', return_value={})
+    @patch.object(states.CreatingOutGoingState.gw, 'create_transfer',
+                  return_value={})
+    @patch.object(states.WaitingDepositState, 'validate_value',
+                  return_value=True)
+    def test_closed_state(self, *args):
+        self.update_obj(2)
+        trx = self.exchanger.transaction_input
+        trx.trx_hash = uuid4()
+        trx.status = TransactionBase.CONFIRMED
+        trx.save()
+        self.exchanger.request_update(
+            stop_status=ExchangeHistory.CREATING_OUTGOING_TRANSFER)
+        self.exchanger.refresh_from_db()
+        trx_out = self.exchanger.transaction_output
+        trx_out.trx_hash = uuid4()
+        trx_out.status = TransactionBase.CONFIRMED
+        trx_out.save()
+        self.exchanger.request_update(
+            stop_status=ExchangeHistory.CLOSED)
+        self.exchanger.refresh_from_db()
+        self.assertEqual(self.exchanger.state, states.ClosedState)
+
+    @patch.object(wallets_service_gw, '_base_request', return_value={})
+    @patch.object(states.WaitingDepositState, 'validate_value',
+                  return_value=False)
+    def test_insufficient_state(self, *args):
+        self.update_obj(2)
+        trx = self.exchanger.transaction_input
+        trx.trx_hash = uuid4()
+        trx.status = TransactionBase.CONFIRMED
+        trx.save()
+        self.exchanger.request_update(
+            stop_status=ExchangeHistory.INSUFFICIENT_DEPOSIT)
+        self.exchanger.refresh_from_db()
+        self.assertEqual(self.exchanger.state, states.InsufficientDepositState)
+
+    @patch.object(wallets_service_gw, '_base_request', return_value={})
+    @patch.object(states.WaitingDepositState, 'validate_value',
+                  return_value=False)
+    @patch.object(states.CreatingOutGoingState.gw, 'create_transfer',
+                  return_value={})
+    def test_returning_deposit_state(self, *args):
+        self.update_obj(2)
+        trx = self.exchanger.transaction_input
+        trx.trx_hash = uuid4()
+        trx.status = TransactionBase.CONFIRMED
+        trx.save()
+        self.exchanger.request_update(
+            stop_status=ExchangeHistory.RETURNING_DEPOSIT)
+        self.exchanger.refresh_from_db()
+        self.assertEqual(self.exchanger.state, states.ReturningDepositState)
+
+    @patch.object(wallets_service_gw, '_base_request', return_value={})
+    @patch.object(states.WaitingDepositState, 'validate_value',
+                  return_value=False)
+    @patch.object(states.CreatingOutGoingState.gw, 'create_transfer',
+                  return_value={})
+    def test_failed_state(self, *args):
+        self.update_obj(2)
+        trx = self.exchanger.transaction_input
+        trx.trx_hash = uuid4()
+        trx.status = TransactionBase.CONFIRMED
+        trx.save()
+        self.exchanger.request_update(
+            stop_status=ExchangeHistory.RETURNING_DEPOSIT)
+        self.exchanger.refresh_from_db()
+        trx_out = self.exchanger.transaction_output
+        trx_out.trx_hash = uuid4()
+        trx_out.status = TransactionBase.CONFIRMED
+        trx_out.save()
+        self.exchanger.request_update(
+            stop_status=ExchangeHistory.FAILED)
+        self.exchanger.refresh_from_db()
+        self.assertEqual(self.exchanger.state, states.FailedState)

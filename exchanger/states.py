@@ -10,6 +10,7 @@ from exchanger.gateway import wallets_service_gw
 from exchanger.gateway import currency_service_gw
 from exchanger.gateway import trx_service_gw
 from exchanger.currencies_gateway import CurrenciesServiceGateway
+from exchanger.transactions_gateway import TransactionsServiceGateway
 from exchanger.gateway.base import BaseRepr
 
 logger = logging.getLogger('exchanger.log')
@@ -257,6 +258,7 @@ class CreateTransferMixin:
     next_state: typing.Type['State']
     wallet_type: str
     set_fee: bool
+    gw: TransactionsServiceGateway()
 
     @classmethod
     def _inner_transition(
@@ -267,7 +269,7 @@ class CreateTransferMixin:
         wallet_id = getattr(exchange_object, cls.wallet_type)
         transfer = exchange_object.transaction_output.transfer_dict()
 
-        trx_service_gw.create_transfer(
+        cls.gw.create_transfer(
             wallet_id=wallet_id,
             **transfer
         )
@@ -296,7 +298,7 @@ class ConfirmTransactionMixin:
 
         trx = getattr(exchange_object, cls.trx_attr)
 
-        if trx.status == models.TransactionBase.CONFIRMED:
+        if trx.status == models.TransactionBase.CONFIRMED and trx.trx_hash:
             return cls.next_state.set(exchange_object)
         return cls
 
@@ -376,6 +378,7 @@ class WaitingDepositState(State):
     """
 
     id = models.ExchangeHistory.WAITING_DEPOSIT
+    gw = currency_service_gw
 
     @classmethod
     def _inner_transition(
@@ -385,11 +388,19 @@ class WaitingDepositState(State):
 
         trx = exchange_object.transaction_input
 
-        if trx.status == models.TransactionBase.CONFIRMED:
-            if trx.value > settings.DEFAULT_FEE:
+        if trx.status == models.TransactionBase.CONFIRMED and trx.trx_hash:
+            if cls.validate_value(trx):
                 return DepositPaidState.set(exchange_object)
             return InsufficientDepositState.set(exchange_object)
         return cls
+
+    @classmethod
+    def validate_value(cls, trx: models.InputTransaction) -> bool:
+        slug = trx.currency.slug
+        rates = {_['slug']: _['rate'] for _ in cls.gw.get_currencies()}
+        usd_value = (Decimal(rates.get(slug)) * trx.value
+                     ).quantize(Decimal('0.001'), rounding=ROUND_HALF_UP)
+        return usd_value > settings.DEFAULT_FEE
 
 
 # Failed states case
@@ -430,6 +441,7 @@ class InsufficientDepositState(CreateTransferMixin,
     wallet_type = 'ingoing_wallet_id'
     trx_attr = 'transaction_output'
     next_state = ReturningDepositState
+    gw = trx_service_gw
 
     @classmethod
     def set(
@@ -524,6 +536,7 @@ class CreatingOutGoingState(CreateTransferMixin,
     trx_attr = 'transaction_output'
     wallet_type = 'outgoing_wallet_id'
     next_state = OutgoingRunningState
+    gw = trx_service_gw
 
     @classmethod
     def set(
