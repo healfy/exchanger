@@ -20,3 +20,9 @@ class BaseManager(models.Manager):
         return BaseQuerySet(
             self.model, using=self._db).update(is_deleted=True,
                                                deleted_at=datetime.now())
+
+
+class CurrencyManager(BaseManager):
+    def get_queryset(self):
+        query = super().get_queryset()
+        return query.filter(active=True)

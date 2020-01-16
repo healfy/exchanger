@@ -9,11 +9,13 @@ from exchanger import states
 from exchanger.currencies_gateway.serializers import CurrencySerializer
 from exchanger.gateway import currency_service_gw
 from exchanger.models import (
-    ExchangeHistory
+    ExchangeHistory,
+    Currency
 )
 
 from .serializers import (
     ExchangeHistorySerializer,
+    InternalCurrencySerializer,
     SettingsSerializer
 )
 
@@ -69,7 +71,7 @@ class ExchangeHistoryViewSet(viewsets.ModelViewSet):
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
-class CurrencyView(APIView):
+class CurrencyServiceView(APIView):
 
     @swagger_auto_schema(responses={200: CurrencySerializer})
     def get(self, request, format=None):
@@ -88,3 +90,8 @@ class SettingsView(APIView):
             'limit': settings.MIN_FEE_LIMIT,
                               }).initial_data
         return Response(data)
+
+
+class InternalCurrenciesViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class = InternalCurrencySerializer
+    queryset = Currency.objects.all()

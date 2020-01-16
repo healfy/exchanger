@@ -4,7 +4,8 @@ from rest_framework import serializers
 from exchanger.models import (
     InputTransaction,
     OutPutTransaction,
-    ExchangeHistory
+    ExchangeHistory,
+    Currency
 )
 from exchanger.gateway import bgw_service_gw
 
@@ -80,3 +81,9 @@ class SettingsSerializer(serializers.Serializer):
     default = serializers.IntegerField()
     extended = serializers.IntegerField()
     limit = serializers.IntegerField()
+
+
+class InternalCurrencySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Currency
+        fields = ('id', 'name')

@@ -40,6 +40,8 @@ schema_view = get_schema_view(
 
 router = routers.DefaultRouter()
 router.register('exchange', views.ExchangeHistoryViewSet, base_name='exchange')
+router.register('internal_currencies', views.InternalCurrenciesViewSet,
+                base_name='internal_currencies')
 
 urlpatterns = [
 
@@ -53,6 +55,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include(router.urls)),
     path('api/', include('rest_framework.urls', namespace='rest_framework')),
-    path('api/currency/', views.CurrencyView.as_view()),
+    path('api/currency/', views.CurrencyServiceView.as_view()),
     path('api/settings/', views.SettingsView.as_view()),
 ]

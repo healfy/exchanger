@@ -3,6 +3,7 @@ import typing
 from datetime import datetime
 from django.db import models
 from .managers import BaseManager
+from .managers import CurrencyManager
 from .utils import nested_commit_on_success
 
 
@@ -57,6 +58,8 @@ class Currency(Base):
 
     is_token = models.BooleanField(verbose_name='Is token currency',
                                    default=False)
+
+    objects = CurrencyManager()
 
     @property
     def is_bitcoin(self):
