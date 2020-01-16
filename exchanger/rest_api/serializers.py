@@ -86,4 +86,4 @@ class SettingsSerializer(serializers.Serializer):
 class InternalCurrencySerializer(serializers.ModelSerializer):
     class Meta:
         model = Currency
-        fields = ('id', 'name')
+        fields = ('id', 'name', 'slug')

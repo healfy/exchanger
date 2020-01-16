@@ -51,7 +51,8 @@ class Currency(Base):
                             max_length=50)
 
     slug = models.CharField(verbose_name='Currency slug',
-                            max_length=50)
+                            max_length=50,
+                            unique=True)
 
     active = models.BooleanField(verbose_name='it is used',
                                  default=True)
