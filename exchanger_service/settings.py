@@ -25,7 +25,7 @@ SECRET_KEY = 'o1z(-b6&&su)(n)#(=*dhb%uj@lb+o2&%*_g!d2j^tzwvd4v!u'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['*', 'http://pdev.bonum.credit']
 
 
 # Application definition
@@ -100,12 +100,12 @@ REST_FRAMEWORK = {
 }
 
 CORS_ORIGIN_WHITELIST = (
-    'localhost:8000',
-    'localhost:8080',
-    'localhost:4200',
-    '127.0.0.1:9000',
-    'pdev.bonum.credit',
-    '*',
+    'http://localhost:8000',
+    'http://localhost:8080',
+    'http://localhost:4200',
+    'http://127.0.0.1:9000',
+    'http://pdev.bonum.credit',
+    'http://*',
 )
 
 CORS_ORIGIN_REGEX_WHITELIST = (
