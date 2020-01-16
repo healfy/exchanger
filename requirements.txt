@@ -18,6 +18,7 @@ google-auth==1.7.2
 google-auth-httplib2==0.0.3
 google-cloud-core==1.1.0
 googleapis-common-protos==1.6.0
+django-cors-headers==3.2.1
 drf-yasg
 uwsgi==2.0.18
 ipython[all]
