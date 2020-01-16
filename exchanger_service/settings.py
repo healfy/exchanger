@@ -96,6 +96,21 @@ REST_FRAMEWORK = {
     ]
 }
 
+CORS_ORIGIN_WHITELIST = (
+    'localhost:8000',
+    'localhost:8080',
+    'localhost:4200',
+    '127.0.0.1:9000',
+    'pdev.bonum.credit',
+    '*',
+)
+
+CORS_ORIGIN_REGEX_WHITELIST = (
+    r'^(https?://)?(\w+\.)?bonum\.credit$',
+    r'localhost:4200',
+    # r'\*'
+)
+
 
 # Password validation
 # https://docs.djangoproject.com/en/2.2/ref/settings/#auth-password-validators
