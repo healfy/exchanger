@@ -28,6 +28,8 @@ class Base(models.Model):
     objects = BaseManager()
     all_objects = models.Manager()
 
+    BASE_FIELDS = ('deleted_at', 'updated_at', 'is_deleted')
+
     def save(self, **kwargs):
         self.updated_at = datetime.now()
         super().save(**kwargs)
@@ -89,8 +91,6 @@ class TransactionBase(Base):
 
     ACTIVE_STATUTES = [SUCCESS, NEW, PENDING, NOT_FOUND]
 
-    BASE_FIELDS = ('deleted_at', 'updated_at', 'is_deleted')
-
     trx_hash = models.CharField(verbose_name='Transaction hash',
                                 max_length=100,
                                 db_index=True,
@@ -100,7 +100,7 @@ class TransactionBase(Base):
 
     value = models.DecimalField(verbose_name='Transaction amount',
                                 max_digits=16,
-                                decimal_places=5)
+                                decimal_places=8)
 
     to_address = models.CharField(verbose_name='Address to which the '
                                                'currency will transfer',
@@ -272,10 +272,15 @@ class ExchangeHistory(Base):
                                     verbose_name='Currency to',
                                     on_delete=models.CASCADE)
 
-    issue_rate = models.DecimalField(verbose_name='Rate in usd',
-                                     max_digits=16,
-                                     decimal_places=8,
-                                     default=0)
+    issue_rate_from = models.DecimalField(verbose_name='Rate in usd',
+                                          max_digits=16,
+                                          decimal_places=8,
+                                          default=0)
+
+    issue_rate_to = models.DecimalField(verbose_name='Rate in usd',
+                                        max_digits=16,
+                                        decimal_places=8,
+                                        default=0)
 
     transaction_input = models.OneToOneField(InputTransaction,
                                              null=True,
@@ -295,11 +300,11 @@ class ExchangeHistory(Base):
 
     ingoing_amount = models.DecimalField(verbose_name='From exchange amount',
                                          max_digits=16,
-                                         decimal_places=5)
+                                         decimal_places=8)
 
     outgoing_amount = models.DecimalField(verbose_name='To exchange amount',
                                           max_digits=16,
-                                          decimal_places=5)
+                                          decimal_places=8)
 
     ingoing_wallet = models.ForeignKey(PlatformWallet,
                                        verbose_name='Which wallet does the input '

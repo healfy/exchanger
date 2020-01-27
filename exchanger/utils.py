@@ -1,5 +1,6 @@
 from django.db import transaction
 from decimal import Decimal
+from decimal import ROUND_HALF_UP
 from django.conf import settings
 
 
@@ -20,3 +21,7 @@ def calculate_fee(amount: Decimal, rates: dict, slug: str) -> Decimal:
     amount_in_usd = amount * rates[slug]
     return Decimal(settings.TRX_FEE_DICT[amount_in_usd >
                                          settings.MIN_FEE_LIMIT])
+
+
+def quantize(value: Decimal) -> Decimal:
+    return value.quantize(Decimal('0.00000001'), rounding=ROUND_HALF_UP)
