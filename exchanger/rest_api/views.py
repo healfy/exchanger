@@ -74,8 +74,12 @@ class CurrencyServiceView(APIView):
 
     @swagger_auto_schema(responses={200: CurrencySerializer})
     def get(self, request, format=None):
-        # TODO: add filter like in auth service
-        return Response(currency_service_gw.get_currencies())
+
+        data = [
+            elem for elem in currency_service_gw.get_currencies()
+            if Currency.objects.filter(slug=elem['slug']).exists()
+        ]
+        return Response(data)
 
 
 class SettingsView(APIView):
