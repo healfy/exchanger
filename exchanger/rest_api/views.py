@@ -74,10 +74,9 @@ class CurrencyServiceView(APIView):
 
     @swagger_auto_schema(responses={200: CurrencySerializer})
     def get(self, request, format=None):
-
         data = [
             elem for elem in currency_service_gw.get_currencies()
-            if Currency.objects.filter(slug=elem['slug']).exists()
+            if elem['slug'] in Currency.objects.values_list('slug', flat=True)
         ]
         return Response(data)
 
