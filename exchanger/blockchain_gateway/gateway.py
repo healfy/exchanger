@@ -21,7 +21,8 @@ class BlockChainServiceGateway(BaseGateway):
     response_attr: str = 'status'
 
     def check_address(
-            self, address: str = None,
+            self,
+            address: str = None,
             currency_slug: str = None
     ) -> typing.Dict:
 

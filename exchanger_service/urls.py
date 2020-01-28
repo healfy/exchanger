@@ -40,8 +40,6 @@ schema_view = get_schema_view(
 
 router = routers.DefaultRouter()
 router.register('exchange', views.ExchangeHistoryViewSet, base_name='exchange')
-router.register('internal_currencies', views.InternalCurrenciesViewSet,
-                base_name='internal_currencies')
 
 urlpatterns = [
 

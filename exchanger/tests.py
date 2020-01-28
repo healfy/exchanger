@@ -19,49 +19,49 @@ class TestBase(TestCase):
     def setUp(self) -> None:
         self.client = APIClient()
         settings.TEST_MODE = True
-        bitcoin = Currency.objects.create(
+        bitcoin, _ = Currency.objects.get_or_create(
             name='Bitcoin',
             slug='bitcoin',
         )
 
-        ethereum = Currency.objects.create(
+        ethereum, _ = Currency.objects.get_or_create(
             name='Ethereum',
             slug='ethereum',
         )
 
-        Currency.objects.create(
+        Currency.objects.get_or_create(
             name='Omisego',
             slug='omisego',
             is_token=True,
         ),
-        Currency.objects.create(
+        Currency.objects.get_or_create(
             name='Basic Attention Token',
             slug='basic-attention-token',
             is_token=True,
         )
-        self.token_in = Currency.objects.create(
+        self.token_in, _ = Currency.objects.get_or_create(
             name='Holo',
             slug='holo',
             is_token=True,
         )
-        self.token_out = Currency.objects.create(
+        self.token_out, _ = Currency.objects.get_or_create(
             name='Chainlink',
             slug='chainlink',
             is_token=True,
         )
-        Currency.objects.create(
+        Currency.objects.get_or_create(
             name='Zilliqa',
             slug='zilliqa',
             is_token=True,
         )
 
-        self.btc_wallet = PlatformWallet.objects.create(
+        self.btc_wallet, _ = PlatformWallet.objects.get_or_create(
             address='test_bitcoin_address',
             currency=bitcoin,
             external_id=1
 
         )
-        self.eth_wallet = PlatformWallet.objects.create(
+        self.eth_wallet, _ = PlatformWallet.objects.get_or_create(
             address='test_etherium_address',
             currency=ethereum,
             external_id=2
@@ -86,8 +86,6 @@ class TestSettingsApi(TestCase):
 
 class TestExchangerApi(TestBase):
     attrs = {
-        'from_currency_id': 'from_currency',
-        'to_currency_id': 'to_currency',
         'from_address': 'from_address',
         'to_address': 'to_address',
     }
@@ -107,6 +105,8 @@ class TestExchangerApi(TestBase):
     def inspect_obj(self, obj):
         for key, value in self.attrs.items():
             self.assertEqual(getattr(obj, key), self.data[value])
+            self.assertEqual(obj.from_currency.slug, self.data['from_currency'])
+            self.assertEqual(obj.to_currency.slug, self.data['to_currency'])
 
     def get_obj(self, resp):
         obj = ExchangeHistory.objects.filter(id=resp.json()['id'])
@@ -116,8 +116,8 @@ class TestExchangerApi(TestBase):
     @patch.object(wallets_service_gw, '_base_request', return_value={})
     def test_create_exchanger_bitcoin(self, *args):
         self.data.update({
-            'from_currency': self.btc_wallet.currency.id,
-            'to_currency': self.btc_wallet.currency.id,
+            'from_currency': self.btc_wallet.currency.slug,
+            'to_currency': self.btc_wallet.currency.slug,
             'ingoing_amount': '1',
             'outgoing_amount': '0.92',
         })
@@ -134,8 +134,8 @@ class TestExchangerApi(TestBase):
     @patch.object(wallets_service_gw, '_base_request', return_value={})
     def test_create_exchanger_ethereum(self, *args):
         self.data.update({
-            'from_currency': self.eth_wallet.currency.id,
-            'to_currency': self.eth_wallet.currency.id,
+            'from_currency': self.eth_wallet.currency.slug,
+            'to_currency': self.eth_wallet.currency.slug,
             'ingoing_amount': '10',
             'outgoing_amount': '9.81',
             'fee': settings.EXTENDED_FEE,
@@ -152,8 +152,8 @@ class TestExchangerApi(TestBase):
     @patch.object(wallets_service_gw, '_base_request', return_value={})
     def test_create_exchanger_token_1(self, *args):
         self.data.update({
-            'from_currency': self.token_in.id,
-            'to_currency': self.eth_wallet.currency.id,
+            'from_currency': self.token_in.slug,
+            'to_currency': self.eth_wallet.currency.slug,
             'ingoing_amount': '10',
             'outgoing_amount': '9.81',
             'fee': settings.EXTENDED_FEE,
@@ -170,8 +170,8 @@ class TestExchangerApi(TestBase):
     @patch.object(wallets_service_gw, '_base_request', return_value={})
     def test_create_exchanger_token_2(self, *args):
         self.data.update({
-            'from_currency': self.token_in.id,
-            'to_currency': self.token_out.id,
+            'from_currency': self.token_in.slug,
+            'to_currency': self.token_out.slug,
             'ingoing_amount': '10',
             'outgoing_amount': '9.81',
             'fee': settings.EXTENDED_FEE,
@@ -189,8 +189,8 @@ class TestExchangerApi(TestBase):
         exc_test = ['This field may not be blank.']
         self.data.update({
             'user_email': '',
-            'from_currency': self.eth_wallet.currency.id,
-            'to_currency': self.eth_wallet.currency.id,
+            'from_currency': self.eth_wallet.currency.slug,
+            'to_currency': self.eth_wallet.currency.slug,
             'ingoing_amount': '10',
             'outgoing_amount': '9.81',
         })
@@ -202,8 +202,8 @@ class TestExchangerApi(TestBase):
         exc_test = ['Enter a valid email address.']
         self.data.update({
             'user_email': '123123123',
-            'from_currency': self.eth_wallet.currency.id,
-            'to_currency': self.eth_wallet.currency.id,
+            'from_currency': self.eth_wallet.currency.slug,
+            'to_currency': self.eth_wallet.currency.slug,
             'ingoing_amount': '10',
             'outgoing_amount': '9.81',
         })
@@ -215,8 +215,8 @@ class TestExchangerApi(TestBase):
         fee = 0
         exc_text = [f'Invalid fee amount']
         self.data.update({
-            'from_currency': self.eth_wallet.currency.id,
-            'to_currency': self.eth_wallet.currency.id,
+            'from_currency': self.eth_wallet.currency.slug,
+            'to_currency': self.eth_wallet.currency.slug,
             'ingoing_amount': '10',
             'outgoing_amount': '9.81',
             'fee': fee
@@ -229,8 +229,8 @@ class TestExchangerApi(TestBase):
         fee = '4.12'
         exc_text = [f'Invalid fee amount']
         self.data.update({
-            'from_currency': self.eth_wallet.currency.id,
-            'to_currency': self.eth_wallet.currency.id,
+            'from_currency': self.eth_wallet.currency.slug,
+            'to_currency': self.eth_wallet.currency.slug,
             'ingoing_amount': '10',
             'outgoing_amount': '9.81',
             'fee': fee
@@ -243,7 +243,7 @@ class TestExchangerApi(TestBase):
         exc_text = ['This field is required.']
 
         self.data.update({
-            'to_currency': self.eth_wallet.currency.id,
+            'to_currency': self.eth_wallet.currency.slug,
             'ingoing_amount': '10',
             'outgoing_amount': '9.81'
         })
@@ -252,12 +252,11 @@ class TestExchangerApi(TestBase):
         self.assertEqual(resp.json()['from_currency'], exc_text)
 
     def test_invalid_from_currency_case_2(self):
-        pk = 21
-        exc_text = [f'Invalid pk "{pk}" - object does not exist.']
+        exc_text = ['Currency matching query does not exist.']
 
         self.data.update({
-            'to_currency': self.eth_wallet.currency.id,
-            'from_currency': pk,
+            'to_currency': self.eth_wallet.currency.slug,
+            'from_currency': 'tether',
             'ingoing_amount': '10',
             'outgoing_amount': '9.81'
         })
@@ -269,7 +268,7 @@ class TestExchangerApi(TestBase):
         exc_text = ['This field is required.']
 
         self.data.update({
-            'from_currency': self.eth_wallet.currency.id,
+            'from_currency': self.eth_wallet.currency.slug,
             'ingoing_amount': '10',
             'outgoing_amount': '9.81'
         })
@@ -278,12 +277,11 @@ class TestExchangerApi(TestBase):
         self.assertEqual(resp.json()['to_currency'], exc_text)
 
     def test_invalid_to_currency_case_2(self):
-        pk = 21
-        exc_text = [f'Invalid pk "{pk}" - object does not exist.']
+        exc_text = ['Currency matching query does not exist.']
 
         self.data.update({
-            'from_currency': self.eth_wallet.currency.id,
-            'to_currency': pk,
+            'from_currency': self.eth_wallet.currency.slug,
+            'to_currency': 'random_slug',
             'ingoing_amount': '10',
             'outgoing_amount': '9.81'
         })
@@ -293,10 +291,10 @@ class TestExchangerApi(TestBase):
 
     def test_invalid_outgoing_amount(self):
         amount = 0
-        exc_text = [f'Invalid outgoing amount 0.00000']
+        exc_text = [f'Invalid outgoing amount 0.0']
         self.data.update({
-            'from_currency': self.eth_wallet.currency.id,
-            'to_currency': self.eth_wallet.currency.id,
+            'from_currency': self.eth_wallet.currency.slug,
+            'to_currency': self.eth_wallet.currency.slug,
             'ingoing_amount': '10',
             'outgoing_amount': amount,
         })
@@ -306,10 +304,10 @@ class TestExchangerApi(TestBase):
 
     def test_invalid_ingoing_amount(self):
         amount = 0
-        exc_text = [f'Invalid ingoing amount 0.00000']
+        exc_text = [f'Invalid ingoing amount 0.0']
         self.data.update({
-            'from_currency': self.eth_wallet.currency.id,
-            'to_currency': self.eth_wallet.currency.id,
+            'from_currency': self.eth_wallet.currency.slug,
+            'to_currency': self.eth_wallet.currency.slug,
             'ingoing_amount': amount,
             'outgoing_amount': '2.21',
         })

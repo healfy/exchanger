@@ -1,7 +1,7 @@
 import typing
 from decimal import Decimal
-from decimal import ROUND_HALF_UP
 from django.conf import settings
+from django.db.models import ObjectDoesNotExist
 from rest_framework import serializers
 
 from exchanger.utils import quantize
@@ -103,14 +103,29 @@ class ExchangeHistorySerializer(serializers.ModelSerializer,
     def validate(self, attrs):
         data = super().validate(attrs)
         if not settings.TEST_MODE:
-            return self.bgw_validate_addresses(data)
+            try:
+                return self.external_svc_validate(data)
+            except Exception as exc:
+                raise serializers.ValidationError(exc)
         return data
 
-    def validate_from_currency(self, slug: str) -> Currency:
-        return Currency.objects.get(slug=slug)
+    def validate_from_currency(
+            self,
+            slug: str
+    ) -> typing.Union[Currency, typing.NoReturn]:
+        try:
+            return Currency.objects.get(slug=slug)
+        except ObjectDoesNotExist as e:
+            raise serializers.ValidationError(e)
 
-    def validate_to_currency(self, slug: str) -> Currency:
-        return Currency.objects.get(slug=slug)
+    def validate_to_currency(
+            self,
+            slug: str
+    ) -> typing.Union[Currency, typing.NoReturn]:
+        try:
+            return Currency.objects.get(slug=slug)
+        except ObjectDoesNotExist as e:
+            raise serializers.ValidationError(e)
 
     def bgw_validate_addresses(self, data: dict) -> dict:
         attrs = ['from', 'to']
@@ -132,13 +147,13 @@ class ExchangeHistorySerializer(serializers.ModelSerializer,
     def validate_ingoing_amount(self, amount):
         if amount <= 0:
             raise serializers.ValidationError(f'Invalid ingoing '
-                                              f'amount {amount}')
+                                              f'amount {float(amount)}')
         return amount
 
     def validate_outgoing_amount(self, amount):
         if amount <= 0:
             raise serializers.ValidationError(f'Invalid outgoing amount'
-                                              f' {amount}')
+                                              f' {float(amount)}')
         return amount
 
 
@@ -146,9 +161,3 @@ class SettingsSerializer(serializers.Serializer):
     default = serializers.IntegerField()
     extended = serializers.IntegerField()
     limit = serializers.IntegerField()
-
-
-class InternalCurrencySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Currency
-        fields = ('id', 'name', 'slug')

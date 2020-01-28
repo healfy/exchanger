@@ -15,7 +15,6 @@ from exchanger.models import (
 
 from .serializers import (
     ExchangeHistorySerializer,
-    InternalCurrencySerializer,
     SettingsSerializer
 )
 
@@ -90,8 +89,3 @@ class SettingsView(APIView):
             'limit': settings.MIN_FEE_LIMIT,
                               }).initial_data
         return Response(data)
-
-
-class InternalCurrenciesViewSet(viewsets.ReadOnlyModelViewSet):
-    serializer_class = InternalCurrencySerializer
-    queryset = Currency.objects.all()
