@@ -18,7 +18,7 @@ def all_subclasses(cls):
 
 
 def calculate_fee(amount: Decimal, rates: dict, slug: str) -> Decimal:
-    amount_in_usd = amount * rates[slug]
+    amount_in_usd = amount * Decimal(rates[slug])
     return Decimal(settings.TRX_FEE_DICT[amount_in_usd >
                                          settings.MIN_FEE_LIMIT])
 
