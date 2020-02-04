@@ -63,7 +63,7 @@ class ExternalServicesValidatorMixin:
         current_rate_to = Decimal(data_rates.get(output_slug))
 
         usd_value_from = quantize(
-            Decimal(current_rate_from * data['ingoing_amount']))
+            Decimal(current_rate_from * Decimal(data['ingoing_amount'])))
 
         usd_fee = calculate_fee(usd_value_from, data_rates, output_slug)
 
