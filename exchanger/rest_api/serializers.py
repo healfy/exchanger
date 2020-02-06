@@ -140,7 +140,7 @@ class ExchangeHistorySerializer(serializers.ModelSerializer,
         return data
 
     def validate_fee(self, fee: Decimal) -> Decimal:
-        if fee <= 0 or fee < settings.DEFAULT_FEE:
+        if not fee:
             raise serializers.ValidationError(f'Invalid fee amount')
         return fee
 
