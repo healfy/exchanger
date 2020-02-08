@@ -156,6 +156,16 @@ class ExchangeHistorySerializer(serializers.ModelSerializer,
                                               f' {float(amount)}')
         return amount
 
+    def validate_from_address(self, address: str):
+        if not address:
+            raise serializers.ValidationError('Required field from_address')
+        return address.lower()
+
+    def validate_to_address(self, address: str):
+        if not address:
+            raise serializers.ValidationError('Required field to_address')
+        return address.lower()
+
 
 class SettingsSerializer(serializers.Serializer):
     default = serializers.IntegerField()
