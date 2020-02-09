@@ -42,7 +42,6 @@ class State(BaseRepr, ABC):
         return valid
 
     @classmethod
-    @utils.nested_commit_on_success
     def set(
             cls,
             exchange_object: models.ExchangeHistory,
