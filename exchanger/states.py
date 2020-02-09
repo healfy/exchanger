@@ -235,7 +235,7 @@ class ValidateInputTransactionMixin:
             fee: Decimal,
             slug: str
     ) -> Decimal:
-        return Decimal((usd_amount - fee) / rates.get(slug))
+        return Decimal((usd_amount - fee) / Decimal(rates.get(slug)))
 
 
 class CreateTransferMixin:
