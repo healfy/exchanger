@@ -49,6 +49,11 @@ class WalletsStub(object):
         request_serializer=wallets__pb2.PlatformWLTMonitoringRequest.SerializeToString,
         response_deserializer=wallets__pb2.PlatformWLTMonitoringResponse.FromString,
         )
+    self.AddInputTransaction = channel.unary_unary(
+        '/wallets.Wallets/AddInputTransaction',
+        request_serializer=wallets__pb2.InputTransactionRequest.SerializeToString,
+        response_deserializer=wallets__pb2.InputTransactionResponse.FromString,
+        )
 
 
 class WalletsServicer(object):
@@ -104,6 +109,13 @@ class WalletsServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
+  def AddInputTransaction(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
 
 def add_WalletsServicer_to_server(servicer, server):
   rpc_method_handlers = {
@@ -141,6 +153,11 @@ def add_WalletsServicer_to_server(servicer, server):
           servicer.StartMonitoringPlatformWallet,
           request_deserializer=wallets__pb2.PlatformWLTMonitoringRequest.FromString,
           response_serializer=wallets__pb2.PlatformWLTMonitoringResponse.SerializeToString,
+      ),
+      'AddInputTransaction': grpc.unary_unary_rpc_method_handler(
+          servicer.AddInputTransaction,
+          request_deserializer=wallets__pb2.InputTransactionRequest.FromString,
+          response_serializer=wallets__pb2.InputTransactionResponse.SerializeToString,
       ),
   }
   generic_handler = grpc.method_handlers_generic_handler(

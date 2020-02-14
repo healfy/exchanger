@@ -24,8 +24,8 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='transactions.proto',
   package='transaction',
   syntax='proto3',
-  serialized_options=_b('\222AJ\022\033\n\024Transactions service2\0031.0\"\004/api*\001\0012\020application/json:\020application/json'),
-  serialized_pb=_b('\n\x12transactions.proto\x12\x0btransaction\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1egoogle/protobuf/duration.proto\x1a\x1cgoogle/api/annotations.proto\x1a,protoc-gen-swagger/options/annotations.proto\"\xba\x01\n\x0bTransaction\x12\x0c\n\x04\x66rom\x18\x01 \x01(\t\x12\n\n\x02to\x18\x02 \x01(\t\x12\x0c\n\x04hash\x18\x03 \x01(\t\x12\x11\n\twallet_id\x18\x04 \x01(\x03\x12\r\n\x05value\x18\x05 \x01(\t\x12\x10\n\x08isOutput\x18\x06 \x01(\x08\x12\x14\n\x0c\x63urrencySlug\x18\x07 \x01(\t\x12\x0e\n\x06status\x18\x08 \x01(\x03\x12\x12\n\nis_fee_trx\x18\t \x01(\x08\x12\x15\n\rtime_at_block\x18\n \x01(\x03\"R\n\x0eResponseHeader\x12+\n\x06status\x18\x01 \x01(\x0e\x32\x1b.transaction.ResponseStatus\x12\x13\n\x0b\x64\x65scription\x18\x02 \x01(\t\"\x10\n\x0eHealthzRequest\"\xa7\x01\n\x08Transfer\x12\x14\n\x0c\x61\x64\x64ress_from\x18\x01 \x01(\t\x12\x12\n\naddress_to\x18\x02 \x01(\t\x12\x14\n\x0c\x63urrencySlug\x18\x03 \x01(\t\x12\r\n\x05value\x18\x04 \x01(\t\x12+\n\x08isOutput\x18\x05 \x01(\x0e\x32\x19.transaction.TransferType\x12\x11\n\twallet_id\x18\x06 \x01(\x03\x12\x0c\n\x04uuid\x18\x07 \x01(\t\">\n\x0fHealthzResponse\x12+\n\x06header\x18\x01 \x01(\x0b\x32\x1b.transaction.ResponseHeader\"@\n\x15\x43reateTransferRequest\x12\'\n\x08transfer\x18\x01 \x01(\x0b\x32\x15.transaction.Transfer\"E\n\x16\x43reateTransferResponse\x12+\n\x06header\x18\x01 \x01(\x0b\x32\x1b.transaction.ResponseHeader\"H\n\x16StartMonitoringRequest\x12.\n\x0ctransactions\x18\x01 \x03(\x0b\x32\x18.transaction.Transaction\"F\n\x17StartMonitoringResponse\x12+\n\x06header\x18\x01 \x01(\x0b\x32\x1b.transaction.ResponseHeader\"w\n\x10GetOutPutRequest\x12\x11\n\twallet_id\x18\x01 \x01(\x03\x12\x16\n\x0ewallet_address\x18\x02 \x01(\t\x12\x14\n\x0c\x63urrencySlug\x18\x03 \x01(\t\x12\x11\n\ttime_from\x18\x04 \x01(\x03\x12\x0f\n\x07time_to\x18\x05 \x01(\x03\"p\n\x11GetOutPutResponse\x12+\n\x06header\x18\x01 \x01(\x0b\x32\x1b.transaction.ResponseHeader\x12.\n\x0ctransactions\x18\x02 \x03(\x0b\x32\x18.transaction.Transaction*J\n\x0eResponseStatus\x12\x0b\n\x07NOT_SET\x10\x00\x12\x0b\n\x07SUCCESS\x10\x01\x12\t\n\x05\x45RROR\x10\x02\x12\x13\n\x0fINVALID_REQUEST\x10\x03*F\n\x0eTransferStatus\x12\r\n\tUNDEFINED\x10\x00\x12\n\n\x06\x41\x43TIVE\x10\x01\x12\r\n\tCONFIRMED\x10\x02\x12\n\n\x06\x46\x41ILED\x10\x03*2\n\x0cTransferType\x12\x0b\n\x07UNKNOWN\x10\x00\x12\t\n\x05INPUT\x10\x01\x12\n\n\x06OUTPUT\x10\x02\x32\xed\x02\n\x0cTransactions\x12\x46\n\x07Healthz\x12\x1b.transaction.HealthzRequest\x1a\x1c.transaction.HealthzResponse\"\x00\x12[\n\x0e\x43reateTransfer\x12\".transaction.CreateTransferRequest\x1a#.transaction.CreateTransferResponse\"\x00\x12^\n\x0fStartMonitoring\x12#.transaction.StartMonitoringRequest\x1a$.transaction.StartMonitoringResponse\"\x00\x12X\n\x15GetOutPutTransactions\x12\x1d.transaction.GetOutPutRequest\x1a\x1e.transaction.GetOutPutResponse\"\x00\x42M\x92\x41J\x12\x1b\n\x14Transactions service2\x03\x31.0\"\x04/api*\x01\x01\x32\x10\x61pplication/json:\x10\x61pplication/jsonb\x06proto3')
+  serialized_options=_b('\222AM\022\033\n\024Transactions service2\0031.0\"\007/api/v1*\001\0012\020application/json:\020application/json'),
+  serialized_pb=_b('\n\x12transactions.proto\x12\x0btransaction\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1egoogle/protobuf/duration.proto\x1a\x1cgoogle/api/annotations.proto\x1a,protoc-gen-swagger/options/annotations.proto\"\xba\x01\n\x0bTransaction\x12\x0c\n\x04\x66rom\x18\x01 \x01(\t\x12\n\n\x02to\x18\x02 \x01(\t\x12\x0c\n\x04hash\x18\x03 \x01(\t\x12\x11\n\twallet_id\x18\x04 \x01(\x03\x12\r\n\x05value\x18\x05 \x01(\t\x12\x10\n\x08isOutput\x18\x06 \x01(\x08\x12\x14\n\x0c\x63urrencySlug\x18\x07 \x01(\t\x12\x0e\n\x06status\x18\x08 \x01(\x03\x12\x12\n\nis_fee_trx\x18\t \x01(\x08\x12\x15\n\rtime_at_block\x18\n \x01(\x03\"R\n\x0eResponseHeader\x12+\n\x06status\x18\x01 \x01(\x0e\x32\x1b.transaction.ResponseStatus\x12\x13\n\x0b\x64\x65scription\x18\x02 \x01(\t\"\x10\n\x0eHealthzRequest\"\xa7\x01\n\x08Transfer\x12\x14\n\x0c\x61\x64\x64ress_from\x18\x01 \x01(\t\x12\x12\n\naddress_to\x18\x02 \x01(\t\x12\x14\n\x0c\x63urrencySlug\x18\x03 \x01(\t\x12\r\n\x05value\x18\x04 \x01(\t\x12+\n\x08isOutput\x18\x05 \x01(\x0e\x32\x19.transaction.TransferType\x12\x11\n\twallet_id\x18\x06 \x01(\x03\x12\x0c\n\x04uuid\x18\x07 \x01(\t\">\n\x0fHealthzResponse\x12+\n\x06header\x18\x01 \x01(\x0b\x32\x1b.transaction.ResponseHeader\"@\n\x15\x43reateTransferRequest\x12\'\n\x08transfer\x18\x01 \x01(\x0b\x32\x15.transaction.Transfer\"E\n\x16\x43reateTransferResponse\x12+\n\x06header\x18\x01 \x01(\x0b\x32\x1b.transaction.ResponseHeader\"H\n\x16StartMonitoringRequest\x12.\n\x0ctransactions\x18\x01 \x03(\x0b\x32\x18.transaction.Transaction\"F\n\x17StartMonitoringResponse\x12+\n\x06header\x18\x01 \x01(\x0b\x32\x1b.transaction.ResponseHeader\"w\n\x10GetOutPutRequest\x12\x11\n\twallet_id\x18\x01 \x01(\x03\x12\x16\n\x0ewallet_address\x18\x02 \x01(\t\x12\x14\n\x0c\x63urrencySlug\x18\x03 \x01(\t\x12\x11\n\ttime_from\x18\x04 \x01(\x03\x12\x0f\n\x07time_to\x18\x05 \x01(\x03\"p\n\x11GetOutPutResponse\x12+\n\x06header\x18\x01 \x01(\x0b\x32\x1b.transaction.ResponseHeader\x12.\n\x0ctransactions\x18\x02 \x03(\x0b\x32\x18.transaction.Transaction*J\n\x0eResponseStatus\x12\x0b\n\x07NOT_SET\x10\x00\x12\x0b\n\x07SUCCESS\x10\x01\x12\t\n\x05\x45RROR\x10\x02\x12\x13\n\x0fINVALID_REQUEST\x10\x03*F\n\x0eTransferStatus\x12\r\n\tUNDEFINED\x10\x00\x12\n\n\x06\x41\x43TIVE\x10\x01\x12\r\n\tCONFIRMED\x10\x02\x12\n\n\x06\x46\x41ILED\x10\x03*2\n\x0cTransferType\x12\x0b\n\x07UNKNOWN\x10\x00\x12\t\n\x05INPUT\x10\x01\x12\n\n\x06OUTPUT\x10\x02\x32\xba\x06\n\x0cTransactions\x12\xa5\x01\n\x07Healthz\x12\x1b.transaction.HealthzRequest\x1a\x1c.transaction.HealthzResponse\"_\x82\xd3\xe4\x93\x02\t\x12\x07/health\x92\x41M\x12\x18Health checking endpoint\x1a\x31Health checking endpoint. Returns HealthzResponse\x12\xc0\x01\n\x0e\x43reateTransfer\x12\".transaction.CreateTransferRequest\x1a#.transaction.CreateTransferResponse\"e\x82\xd3\xe4\x93\x02\x15\"\x10/create_transfer:\x01*\x92\x41G\x12\x18\x43reate transfer endpoint\x1a+Send request with params to create transfer\x12\xef\x01\n\x0fStartMonitoring\x12#.transaction.StartMonitoringRequest\x1a$.transaction.StartMonitoringResponse\"\x90\x01\x82\xd3\xe4\x93\x02\x16\"\x11/start_monitoring:\x01*\x92\x41q\x12\x31Start monitoring transactions on service endpoint\x1a<Send transactions with params to start monitoring on service\x12\xcc\x01\n\x15GetOutPutTransactions\x12\x1d.transaction.GetOutPutRequest\x1a\x1e.transaction.GetOutPutResponse\"t\x82\xd3\xe4\x93\x02\x1d\"\x18/get_output_transactions:\x01*\x92\x41N\x12 Get output transactions endpoint\x1a*Send params to get get output transactionsBP\x92\x41M\x12\x1b\n\x14Transactions service2\x03\x31.0\"\x07/api/v1*\x01\x01\x32\x10\x61pplication/json:\x10\x61pplication/jsonb\x06proto3')
   ,
   dependencies=[google_dot_protobuf_dot_timestamp__pb2.DESCRIPTOR,google_dot_protobuf_dot_duration__pb2.DESCRIPTOR,google_dot_api_dot_annotations__pb2.DESCRIPTOR,protoc__gen__swagger_dot_options_dot_annotations__pb2.DESCRIPTOR,])
 
@@ -724,7 +724,7 @@ _TRANSACTIONS = _descriptor.ServiceDescriptor(
   index=0,
   serialized_options=None,
   serialized_start=1420,
-  serialized_end=1785,
+  serialized_end=2246,
   methods=[
   _descriptor.MethodDescriptor(
     name='Healthz',
@@ -733,7 +733,7 @@ _TRANSACTIONS = _descriptor.ServiceDescriptor(
     containing_service=None,
     input_type=_HEALTHZREQUEST,
     output_type=_HEALTHZRESPONSE,
-    serialized_options=None,
+    serialized_options=_b('\202\323\344\223\002\t\022\007/health\222AM\022\030Health checking endpoint\0321Health checking endpoint. Returns HealthzResponse'),
   ),
   _descriptor.MethodDescriptor(
     name='CreateTransfer',
@@ -742,7 +742,7 @@ _TRANSACTIONS = _descriptor.ServiceDescriptor(
     containing_service=None,
     input_type=_CREATETRANSFERREQUEST,
     output_type=_CREATETRANSFERRESPONSE,
-    serialized_options=None,
+    serialized_options=_b('\202\323\344\223\002\025\"\020/create_transfer:\001*\222AG\022\030Create transfer endpoint\032+Send request with params to create transfer'),
   ),
   _descriptor.MethodDescriptor(
     name='StartMonitoring',
@@ -751,7 +751,7 @@ _TRANSACTIONS = _descriptor.ServiceDescriptor(
     containing_service=None,
     input_type=_STARTMONITORINGREQUEST,
     output_type=_STARTMONITORINGRESPONSE,
-    serialized_options=None,
+    serialized_options=_b('\202\323\344\223\002\026\"\021/start_monitoring:\001*\222Aq\0221Start monitoring transactions on service endpoint\032<Send transactions with params to start monitoring on service'),
   ),
   _descriptor.MethodDescriptor(
     name='GetOutPutTransactions',
@@ -760,7 +760,7 @@ _TRANSACTIONS = _descriptor.ServiceDescriptor(
     containing_service=None,
     input_type=_GETOUTPUTREQUEST,
     output_type=_GETOUTPUTRESPONSE,
-    serialized_options=None,
+    serialized_options=_b('\202\323\344\223\002\035\"\030/get_output_transactions:\001*\222AN\022 Get output transactions endpoint\032*Send params to get get output transactions'),
   ),
 ])
 _sym_db.RegisterServiceDescriptor(_TRANSACTIONS)

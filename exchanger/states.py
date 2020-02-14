@@ -359,21 +359,44 @@ class NewState(State,
             exchange_object: models.ExchangeHistory
     ) -> typing.Type['State']:
 
-        wallets_service_gw.put_on_monitoring(
-            wallet_id=exchange_object.ingoing_wallet.external_id,
-            wallet_address=exchange_object.ingoing_wallet.address,
-            expected_currency=exchange_object.transaction_input.currency.slug,
-            expected_address=exchange_object.transaction_input.from_address,
-            expected_amount=exchange_object.transaction_input.value,
-            uuid=exchange_object.transaction_input.uuid
-        )
+        return WaitingHashState.set(exchange_object)
 
-        return WaitingDepositState.set(exchange_object)
+
+class WaitingHashState(State):
+
+    """
+    Intermediate state for exchange object
+    When user sent transaction to platform wallet
+    we start monitoring this transfer and if it will be successful,
+    confirm it
+    """
+
+    id = models.ExchangeHistory.WAITING_HASH
+
+    @classmethod
+    def _inner_transition(
+            cls,
+            exchange_object: models.ExchangeHistory
+    ) -> typing.Type['State']:
+
+        try:
+            wallets_service_gw.add_input_transaction(
+                trx_hash=exchange_object.transaction_input.trx_hash,
+                wallet_address=exchange_object.ingoing_wallet.address,
+                currency=exchange_object.transaction_input.currency.slug,
+                from_address=exchange_object.transaction_input.from_address,
+                amount=exchange_object.transaction_input.value,
+                uuid=exchange_object.transaction_input.uuid
+            )
+            return WaitingDepositState.set(exchange_object)
+        except ValueError as exc:
+            logger.error(f'{cls.__class__.__name__} got {exc}')
+        return cls
 
 
 class WaitingDepositState(State):
     """
-    State in which we are waiting money(deposit) transfer from user
+    State in which we are waiting confirmed money(deposit) transfer from user
     """
 
     id = models.ExchangeHistory.WAITING_DEPOSIT
@@ -561,7 +584,8 @@ def state_by_status(status: typing.Union[int, State]) -> typing.Type['State']:
 
 __STATES_TRANSACTIONS__ = {
     UnknownState: [NewState],
-    NewState: [WaitingDepositState],
+    NewState: [WaitingHashState],
+    WaitingHashState: [WaitingDepositState],
     WaitingDepositState: [DepositPaidState, InsufficientDepositState],
     DepositPaidState: [CalculatingState],
     CalculatingState: [CreatingOutGoingState],

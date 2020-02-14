@@ -5,6 +5,7 @@ from django.db import models
 from .managers import BaseManager
 from .managers import CurrencyManager
 from .utils import nested_commit_on_success
+from .utils import all_kwargs_required
 
 
 class Base(models.Model):
@@ -206,6 +207,11 @@ class ExchangeHistory(Base):
     ********************* NEW *****************************
                            *
                            *
+                           *
+    ****************  WAITING HASH *********************
+                           *
+                           *
+                           *
     ****************  WAITING_DEPOSIT *********************
                         *      *
                       *          *
@@ -241,6 +247,7 @@ class ExchangeHistory(Base):
     RETURNING_DEPOSIT = 9
     DEPOSIT_RETURNED = 10
     CALCULATING = 11
+    WAITING_HASH = 12
 
     EXCHANGE_STATUTES = (
         (UNKNOWN, 'UNKNOWN STATUS'),
@@ -255,6 +262,7 @@ class ExchangeHistory(Base):
         (RETURNING_DEPOSIT, 'RETURNING_DEPOSIT'),
         (DEPOSIT_RETURNED, 'DEPOSIT_RETURNED'),
         (CALCULATING, 'CALCULATING'),
+        (WAITING_HASH, 'WAITING INPUT TRANSACTION HASH'),
     )
 
     user_email = models.EmailField(verbose_name='Email of user')
@@ -369,6 +377,16 @@ class ExchangeHistory(Base):
             'outgoing_amount': self.outgoing_amount,
             'user': self.user_email
         }
+
+    @all_kwargs_required
+    def set_input_transaction_hash(
+            self,
+            *,
+            trx_hash: str = None
+    ) -> typing.Any:
+
+        self.transaction_input.trx_hash = trx_hash
+        self.transaction_input.save()
 
     class Meta:
         verbose_name = 'Exchange History'

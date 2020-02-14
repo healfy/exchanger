@@ -62,6 +62,17 @@ class ExchangeHistoryViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     @swagger_auto_schema(
+        responses={status.HTTP_200_OK: 'OK'}
+    )
+    @action(methods=['post'], detail=True)
+    def update_transaction(self, request, trx_hash: str, *args, **kwargs):
+        instance = self.get_object()
+        instance.set_input_transaction_hash(trx_hash)
+        instance.request_update()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
+    @swagger_auto_schema(
         deprecated=True
     )
     def list(self, request, *args, **kwargs):

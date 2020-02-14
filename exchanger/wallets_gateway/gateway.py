@@ -1,6 +1,8 @@
 import grpc
 import typing
+from decimal import Decimal
 from django.conf import settings
+from exchanger.utils import all_kwargs_required
 from exchanger.gateway.base import BaseGateway
 from exchanger.rpc.wallets_pb2_grpc import wallets__pb2 as wallets_pb2
 from exchanger.rpc import wallets_pb2_grpc
@@ -18,8 +20,10 @@ class WalletsServiceGateway(BaseGateway):
     EXC_CLASS = WalletsBadResponseException
     BAD_RESPONSE_MSG = 'Bad response from wallets gateway.'
 
+    @all_kwargs_required
     def put_on_monitoring(
             self,
+            *,
             wallet_id: int = None,
             wallet_address: str = None,
             expected_currency: str = None,
@@ -54,5 +58,44 @@ class WalletsServiceGateway(BaseGateway):
             resp = self._base_request(
                 request_message,
                 client.StartMonitoringPlatformWallet,
+            )
+        return resp
+
+    @all_kwargs_required
+    def add_input_transaction(
+            self,
+            *,
+            trx_hash: str = None,
+            wallet_address: str = None,
+            currency_slug: str = None,
+            from_address: str = None,
+            amount: Decimal = None,
+            uuid: str = None
+    ):
+        """
+        Method that send request to service wallet to start monitoring
+        current transaction from user address
+        :param trx_hash: hash of trx from database
+        :param wallet_address: exchanger wallet address from blockchain
+        :param currency_slug: currency slug of  transaction
+        :param from_address: user wallet address
+        :param amount: amount of transaction
+        :param uuid: unique internal identifier for transactions
+        """
+        request_message = self.MODULE.InputTransactionRequest(
+            from_address=from_address,
+            hash=trx_hash,
+            wallet_address=wallet_address,
+            currency=currency_slug,
+            value=str(amount),
+            uuid=str(uuid),
+        )
+
+        with grpc.insecure_channel(self.GW_ADDRESS) as channel:
+            client = self.ServiceStub(channel)
+
+            resp = self._base_request(
+                request_message,
+                client.AddInputTransaction,
             )
         return resp
