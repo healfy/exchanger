@@ -171,3 +171,19 @@ class SettingsSerializer(serializers.Serializer):
     default = serializers.IntegerField()
     extended = serializers.IntegerField()
     limit = serializers.IntegerField()
+
+
+class TrxHashSerializer(serializers.Serializer):
+
+    trx_hash = serializers.CharField()
+
+    class Meta:
+        model = InputTransaction
+        exclude = '__all__'
+
+    def validate_trx_hash(self, _hash:str):
+        if self.Meta.model.objects.filter(trx_hash=_hash).exists():
+            return serializers.ValidationError(
+                f'Transaction with hash {_hash} already in base'
+            )
+        return _hash

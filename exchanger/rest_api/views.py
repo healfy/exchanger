@@ -1,3 +1,4 @@
+import typing
 from django.conf import settings
 from rest_framework import viewsets
 from rest_framework.views import APIView
@@ -15,11 +16,39 @@ from exchanger.models import (
 
 from .serializers import (
     ExchangeHistorySerializer,
-    SettingsSerializer
+    SettingsSerializer,
+    TrxHashSerializer
 )
 
 
-class ExchangeHistoryViewSet(viewsets.ModelViewSet):
+class UpdateTrxMixin:
+
+    get_object: typing.Callable
+    get_serializer: typing.Callable
+    additional_serializer = TrxHashSerializer
+
+    @swagger_auto_schema(
+        responses={status.HTTP_200_OK: 'OK'},
+        request_body=TrxHashSerializer
+    )
+    @action(methods=['post'], detail=True)
+    def update_transaction(self, request, *args, **kwargs):
+        instance = self.get_object()
+        trx_hash = self.get_trx_hash(request)
+        instance.set_input_transaction_hash(trx_hash)
+        instance.request_update()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
+    def get_trx_hash(self, request):
+        serializer = self.additional_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        return serializer.data['trx_hash']
+
+
+class ExchangeHistoryViewSet(viewsets.ModelViewSet,
+                             UpdateTrxMixin):
+
     queryset = ExchangeHistory.objects.all()
     serializer_class = ExchangeHistorySerializer
 
@@ -57,17 +86,6 @@ class ExchangeHistoryViewSet(viewsets.ModelViewSet):
     @action(methods=['get'], detail=True)
     def refresh(self, request, *args, **kwargs):
         instance = self.get_object()
-        instance.request_update()
-        serializer = self.get_serializer(instance)
-        return Response(serializer.data)
-
-    @swagger_auto_schema(
-        responses={status.HTTP_200_OK: 'OK'}
-    )
-    @action(methods=['post'], detail=True)
-    def update_transaction(self, request, trx_hash: str, *args, **kwargs):
-        instance = self.get_object()
-        instance.set_input_transaction_hash(trx_hash)
         instance.request_update()
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
