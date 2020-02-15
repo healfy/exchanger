@@ -35,7 +35,7 @@ class UpdateTrxMixin:
     def update_transaction(self, request, *args, **kwargs):
         instance = self.get_object()
         trx_hash = self.get_trx_hash(request)
-        instance.set_input_transaction_hash(trx_hash)
+        instance.set_input_transaction_hash(trx_hash=trx_hash)
         instance.request_update()
         serializer = self.get_serializer(instance)
         return Response(serializer.data)

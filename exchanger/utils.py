@@ -54,9 +54,6 @@ def all_kwargs_required(func):
                 " Python " + current_version)
             return func(*args, **kwargs)
 
-        if args:
-            raise ValueError(f'function "{func.__name__}" allows only '
-                             f'keyword arguments')
         for param in func.__kwdefaults__:
             if param not in kwargs:
                 raise ValueError(f'named argument {param} of '

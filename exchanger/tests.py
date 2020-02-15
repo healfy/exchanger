@@ -113,7 +113,6 @@ class TestExchangerApi(TestBase):
         self.assertIsNotNone(obj)
         return obj.get()
 
-    @patch.object(wallets_service_gw, '_base_request', return_value={})
     def test_create_exchanger_bitcoin(self, *args):
         self.data.update({
             'from_currency': self.btc_wallet.currency.slug,
@@ -128,10 +127,9 @@ class TestExchangerApi(TestBase):
         self.assertEqual(obj.outgoing_wallet, self.btc_wallet)
         self.inspect_obj(obj)
 
-        self.assertEqual(obj.state, states.WaitingDepositState)
+        self.assertEqual(obj.state, states.WaitingHashState)
         self.assertEqual(obj.fee, settings.DEFAULT_FEE)
 
-    @patch.object(wallets_service_gw, '_base_request', return_value={})
     def test_create_exchanger_ethereum(self, *args):
         self.data.update({
             'from_currency': self.eth_wallet.currency.slug,
@@ -146,10 +144,10 @@ class TestExchangerApi(TestBase):
         self.inspect_obj(obj)
         self.assertEqual(obj.ingoing_wallet, self.eth_wallet)
         self.assertEqual(obj.outgoing_wallet, self.eth_wallet)
-        self.assertEqual(obj.state, states.WaitingDepositState)
+        self.assertEqual(obj.state, states.WaitingHashState)
         self.assertEqual(obj.fee, settings.EXTENDED_FEE)
 
-    @patch.object(wallets_service_gw, '_base_request', return_value={})
+ #   @patch.object(wallets_service_gw, '_base_request', return_value={})
     def test_create_exchanger_token_1(self, *args):
         self.data.update({
             'from_currency': self.token_in.slug,
@@ -164,10 +162,9 @@ class TestExchangerApi(TestBase):
         self.inspect_obj(obj)
         self.assertEqual(obj.ingoing_wallet, self.eth_wallet)
         self.assertEqual(obj.outgoing_wallet, self.eth_wallet)
-        self.assertEqual(obj.state, states.WaitingDepositState)
+        self.assertEqual(obj.state, states.WaitingHashState)
         self.assertEqual(obj.fee, settings.EXTENDED_FEE)
 
-    @patch.object(wallets_service_gw, '_base_request', return_value={})
     def test_create_exchanger_token_2(self, *args):
         self.data.update({
             'from_currency': self.token_in.slug,
@@ -182,7 +179,7 @@ class TestExchangerApi(TestBase):
         self.inspect_obj(obj)
         self.assertEqual(obj.ingoing_wallet, self.eth_wallet)
         self.assertEqual(obj.outgoing_wallet, self.eth_wallet)
-        self.assertEqual(obj.state, states.WaitingDepositState)
+        self.assertEqual(obj.state, states.WaitingHashState)
         self.assertEqual(obj.fee, settings.EXTENDED_FEE)
 
     def test_invalid_email_cases_1(self):
@@ -213,20 +210,6 @@ class TestExchangerApi(TestBase):
 
     def test_invalid_fee_case_1(self):
         fee = 0
-        exc_text = [f'Invalid fee amount']
-        self.data.update({
-            'from_currency': self.eth_wallet.currency.slug,
-            'to_currency': self.eth_wallet.currency.slug,
-            'ingoing_amount': '10',
-            'outgoing_amount': '9.81',
-            'fee': fee
-        })
-        resp = self.client.post('/api/exchange/', data=self.data)
-        self.assertEqual(resp.status_code, 400)
-        self.assertEqual(resp.json()['fee'], exc_text)
-
-    def test_invalid_fee_case_2(self):
-        fee = '4.12'
         exc_text = [f'Invalid fee amount']
         self.data.update({
             'from_currency': self.eth_wallet.currency.slug,
@@ -354,6 +337,20 @@ class TestStates(TestBase):
         self.assertEqual(self.exchanger.state, states.NewState)
         self.assertIsNotNone(self.exchanger.outgoing_wallet)
         self.assertIsNotNone(self.exchanger.ingoing_wallet)
+
+    @patch.object(wallets_service_gw, '_base_request', return_value={})
+    def test_waiting_hash_state(self, *args):
+        self.exchanger.request_update(stop_status=ExchangeHistory.WAITING_HASH)
+        self.exchanger.refresh_from_db()
+        self.assertEqual(self.exchanger.state, states.WaitingHashState)
+        self.assertIsNone(self.exchanger.transaction_input.trx_hash)
+        _hash = str(uuid4())
+        resp = self.client.post(
+            f'/api/exchange/{self.exchanger.id}/update_transaction/',
+            data={'trx_hash': _hash})
+        self.assertEqual(200,  resp.status_code)
+        self.exchanger.refresh_from_db()
+        self.assertEqual(self.exchanger.transaction_input.trx_hash, _hash)
 
     @patch.object(wallets_service_gw, '_base_request', return_value={})
     def test_waiting_deposit_state(self, *args):
