@@ -383,7 +383,7 @@ class WaitingHashState(State):
             wallets_service_gw.add_input_transaction(
                 trx_hash=exchange_object.transaction_input.trx_hash,
                 wallet_address=exchange_object.ingoing_wallet.address,
-                currency=exchange_object.transaction_input.currency.slug,
+                currency_slug=exchange_object.transaction_input.currency.slug,
                 from_address=exchange_object.transaction_input.from_address,
                 amount=exchange_object.transaction_input.value,
                 uuid=exchange_object.transaction_input.uuid

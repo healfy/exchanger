@@ -59,7 +59,7 @@ def all_kwargs_required(func):
                 raise ValueError(f'named argument {param} of '
                                  f'function "{func.__name__}" is required')
             if not kwargs.get(param, None):
-                raise ValueError(f'value of argument {param} in '
+                raise ValueError(f'value of argument {param}: --[{kwargs.get(param, None)}]-- in '
                                  f'function "{func.__name__}" is required')
         return func(*args, **kwargs)
     return _wrapper

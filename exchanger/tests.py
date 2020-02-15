@@ -354,20 +354,30 @@ class TestStates(TestBase):
 
     @patch.object(wallets_service_gw, '_base_request', return_value={})
     def test_waiting_deposit_state(self, *args):
-        self.update_obj(2)
+        self.exchanger.request_update(stop_status=ExchangeHistory.WAITING_HASH)
+        self.exchanger.refresh_from_db()
+        self.assertEqual(self.exchanger.state, states.WaitingHashState)
+        self.assertIsNone(self.exchanger.transaction_input.trx_hash)
+        _hash = str(uuid4())
+        self.client.post(
+            f'/api/exchange/{self.exchanger.id}/update_transaction/',
+            data={'trx_hash': _hash})
+        self.exchanger.refresh_from_db()
         self.assertEqual(self.exchanger.state, states.WaitingDepositState)
-        self.assertIsNotNone(self.exchanger.transaction_input)
+        self.assertEqual(self.exchanger.transaction_input.trx_hash, _hash)
         trx = self.exchanger.transaction_input
         self.assertEqual(trx.from_address, self.exchanger.from_address)
         self.assertEqual(trx.to_address, self.exchanger.ingoing_wallet.address)
         self.assertEqual(trx.currency, self.exchanger.from_currency)
-        self.assertIsNone(trx.trx_hash)
 
     @patch.object(wallets_service_gw, '_base_request', return_value={})
     @patch.object(states.WaitingDepositState, 'validate_value',
                   return_value=True)
     def test_deposit_payed_state(self, *args):
         self.update_obj(2)
+        self.exchanger.status = ExchangeHistory.WAITING_DEPOSIT
+        self.exchanger.save()
+        self.exchanger.refresh_from_db()
         trx = self.exchanger.transaction_input
         trx.trx_hash = uuid4()
         trx.status = TransactionBase.CONFIRMED
@@ -381,6 +391,9 @@ class TestStates(TestBase):
                   return_value=True)
     def test_calculating_state(self, *args):
         self.update_obj(2)
+        self.exchanger.status = ExchangeHistory.DEPOSIT_PAID
+        self.exchanger.save()
+        self.exchanger.refresh_from_db()
         trx = self.exchanger.transaction_input
         trx.trx_hash = uuid4()
         trx.status = TransactionBase.CONFIRMED
@@ -394,6 +407,9 @@ class TestStates(TestBase):
                   return_value=True)
     def test_create_outgoing_state(self, *args):
         self.update_obj(2)
+        self.exchanger.status = ExchangeHistory.CALCULATING
+        self.exchanger.save()
+        self.exchanger.refresh_from_db()
         trx = self.exchanger.transaction_input
         trx.trx_hash = uuid4()
         trx.status = TransactionBase.CONFIRMED
@@ -414,6 +430,9 @@ class TestStates(TestBase):
                   return_value=True)
     def test_outgoing_running_state(self, *args):
         self.update_obj(2)
+        self.exchanger.status = ExchangeHistory.DEPOSIT_PAID
+        self.exchanger.save()
+        self.exchanger.refresh_from_db()
         trx = self.exchanger.transaction_input
         trx.trx_hash = uuid4()
         trx.status = TransactionBase.CONFIRMED
@@ -432,6 +451,9 @@ class TestStates(TestBase):
                   return_value=True)
     def test_closed_state(self, *args):
         self.update_obj(2)
+        self.exchanger.status = ExchangeHistory.DEPOSIT_PAID
+        self.exchanger.save()
+        self.exchanger.refresh_from_db()
         trx = self.exchanger.transaction_input
         trx.trx_hash = uuid4()
         trx.status = TransactionBase.CONFIRMED
@@ -453,6 +475,9 @@ class TestStates(TestBase):
                   return_value=False)
     def test_insufficient_state(self, *args):
         self.update_obj(2)
+        self.exchanger.status = ExchangeHistory.WAITING_DEPOSIT
+        self.exchanger.save()
+        self.exchanger.refresh_from_db()
         trx = self.exchanger.transaction_input
         trx.trx_hash = uuid4()
         trx.status = TransactionBase.CONFIRMED
@@ -469,6 +494,9 @@ class TestStates(TestBase):
                   return_value={})
     def test_returning_deposit_state(self, *args):
         self.update_obj(2)
+        self.exchanger.status = ExchangeHistory.WAITING_DEPOSIT
+        self.exchanger.save()
+        self.exchanger.refresh_from_db()
         trx = self.exchanger.transaction_input
         trx.trx_hash = uuid4()
         trx.status = TransactionBase.CONFIRMED
@@ -485,6 +513,9 @@ class TestStates(TestBase):
                   return_value={})
     def test_failed_state(self, *args):
         self.update_obj(2)
+        self.exchanger.status = ExchangeHistory.WAITING_DEPOSIT
+        self.exchanger.save()
+        self.exchanger.refresh_from_db()
         trx = self.exchanger.transaction_input
         trx.trx_hash = uuid4()
         trx.status = TransactionBase.CONFIRMED
