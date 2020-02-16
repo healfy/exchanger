@@ -269,7 +269,8 @@ class ExchangeHistory(Base):
 
     fee = models.DecimalField(verbose_name='Transaction fee',
                               max_digits=16,
-                              decimal_places=8)
+                              decimal_places=8,
+                              default=0)
 
     from_currency = models.ForeignKey(Currency,
                                       verbose_name='Currency from',
