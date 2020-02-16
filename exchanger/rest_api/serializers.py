@@ -66,6 +66,9 @@ class ExternalServicesValidatorMixin:
             Decimal(current_rate_from * Decimal(data['ingoing_amount'])))
 
         usd_fee = calculate_fee(usd_value_from, data_rates, output_slug)
+        if usd_value_from - usd_fee <= 0:
+            raise serializers.ValidationError(
+                f'{output_slug} : "{usd_value_from}" is to low for exchanger ')
 
         data['fee'] = quantize(Decimal(usd_fee / current_rate_from))
 
@@ -138,11 +141,6 @@ class ExchangeHistorySerializer(serializers.ModelSerializer,
                     f'You address {data[f"{attr}_address"]} is not valid'
                 )
         return data
-
-    def validate_fee(self, fee: Decimal) -> Decimal:
-        if not fee:
-            raise serializers.ValidationError(f'Invalid fee amount')
-        return fee
 
     def validate_ingoing_amount(self, amount):
         if amount <= 0:

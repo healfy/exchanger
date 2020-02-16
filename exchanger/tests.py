@@ -208,20 +208,6 @@ class TestExchangerApi(TestBase):
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(resp.json()['user_email'], exc_test)
 
-    def test_invalid_fee_case_1(self):
-        fee = 0
-        exc_text = [f'Invalid fee amount']
-        self.data.update({
-            'from_currency': self.eth_wallet.currency.slug,
-            'to_currency': self.eth_wallet.currency.slug,
-            'ingoing_amount': '10',
-            'outgoing_amount': '9.81',
-            'fee': fee
-        })
-        resp = self.client.post('/api/exchange/', data=self.data)
-        self.assertEqual(resp.status_code, 400)
-        self.assertEqual(resp.json()['fee'], exc_text)
-
     def test_invalid_from_currency_case_1(self):
         exc_text = ['This field is required.']
 
