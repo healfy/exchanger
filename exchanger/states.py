@@ -3,7 +3,11 @@ import logging
 from abc import ABC
 from decimal import Decimal
 from decimal import ROUND_HALF_UP
+
 from django.conf import settings
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+
 from exchanger import models
 from exchanger import utils
 from exchanger.gateway import wallets_service_gw
@@ -527,6 +531,31 @@ class ClosedState(State):
     Final state in successfully direction
     """
     id = models.ExchangeHistory.CLOSED
+
+    def send_email(self, exchanger_object: models.ExchangeHistory):
+
+        use_https = settings.DEFAULT_HOST == 'app.bonumchain.com'
+
+        context = {
+            'default_host': settings.DEFAULT_HOST,
+            'protocol': 'https' if use_https else 'http',
+        }
+        context.update(exchanger_object.to_info_message)
+
+        try:
+            send_mail(
+                'Report for exchanger operation',
+                '',
+                settings.DEFAULT_FROM_EMAIL,
+                [exchanger_object.user_email],
+                html_message=render_to_string(
+                    'exchanger_mail.html', context),
+            )
+        except Exception as e:
+            logger.critical(f'send  email to '
+                            f'{exchanger_object.user_email} failed {e}')
+            return False
+        return True
 
 
 class OutgoingRunningState(ConfirmTransactionMixin,

@@ -101,7 +101,7 @@ class ExchangeHistorySerializer(serializers.ModelSerializer,
 
     class Meta:
         model = ExchangeHistory
-        exclude = ExchangeHistory.BASE_FIELDS
+        exclude = ExchangeHistory.BASE_FIELDS + ('id', )
 
     def validate(self, attrs):
         data = super().validate(attrs)
@@ -163,6 +163,11 @@ class ExchangeHistorySerializer(serializers.ModelSerializer,
         if not address:
             raise serializers.ValidationError('Required field to_address')
         return address.lower()
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data['id'] = instance.uuid
+        return data
 
 
 class SettingsSerializer(serializers.Serializer):

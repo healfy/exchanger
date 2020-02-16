@@ -28,3 +28,4 @@ pytest-easyread
 pytest-only
 pytest-pudb
 pytest-sugar
+django-anymail==7.0.0

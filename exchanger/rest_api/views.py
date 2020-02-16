@@ -51,6 +51,7 @@ class ExchangeHistoryViewSet(viewsets.ModelViewSet,
 
     queryset = ExchangeHistory.objects.all()
     serializer_class = ExchangeHistorySerializer
+    lookup_field = 'uuid'
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)

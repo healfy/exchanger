@@ -1,0 +1,167 @@
+{% load i18n %}
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="">
+    <meta property="og:url" content="">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+    <title>Bonum | Confirm email</title>
+
+
+    <style type="text/css">
+
+    #template-content body {
+        font-family: 'Ubuntu';
+        color: #fff
+    }
+
+    #template-content a:link, #template-content a:visited, #template-content a.yshortcuts {
+        color: #fff;
+        font-weight: normal;
+        text-decoration: underline
+    }
+
+    #template-content h1 {
+        padding: 0;
+        margin: 0
+    }
+
+    #template-content h2 {
+        margin-top: 0;
+        margin-bottom: 24px;
+        color: #fff;
+        font-family: 'Ubuntu'
+    }
+
+    #template-content img {
+        display: inline;
+        height: auto;
+        width: 100%
+    }
+
+    #template-content p {
+        margin-top: 0;
+        margin-bottom: 30px;
+        color: #fff
+    }
+
+    #template-content hr {
+        height: 1px;
+        background: #4A4A55;
+        border: none;
+        margin-bottom: 35px
+    }
+    </style>
+</head>
+<body leftmargin="0" marginwidth="0" topmargin="0" marginheight="0" offset="0"
+      style="-ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; background-color: #232331; height: 100% !important; margin: 0; padding: 0; width: 100%;">
+
+<div itemscope="" itemtype="http://schema.org/EmailMessage">
+    <div itemprop="publisher" itemscope=""
+         itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="*|LIST:COMPANY|*">
+        <link itemprop="url" content="*|LIST:URL|*">
+    </div>
+    <div itemprop="about" itemscope="" itemtype="http://schema.org/Offer"></div>
+</div>
+<center id="body-container"
+        style="margin: 20px auto; max-width: 600px; width: 100%;">
+
+    <center id="template-content" style="background-color: #2d2d37;">
+
+        <table border="0" cellpadding="0" cellspacing="0"
+               id="template-content-header" width="100%"
+               style="-ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; border-collapse: collapse !important; mso-table-lspace: 0pt; mso-table-rspace: 0pt; position: relative; text-align: center;">
+            <tr>
+                <td align="center" valign="top"
+                    style="-ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; background-color: #2d2d37; font-family: 'Ubuntu', sans-serif; mso-table-lspace: 0pt; mso-table-rspace: 0pt; padding: 0 0;">
+                    <h1 mc:edit="email_title" class="email-title"
+                        style="background-image: url('http://pdev.bonum.credit/assets/email/Group 3.png'); background-repeat: no-repeat; background-size: 226px 196px; color: #fff; display: flex; font-size: 16px; font-weight: 700; height: 196px; padding: 0; padding-top: 18px; text-decoration: none;">
+
+                        <div class="subheader"
+                             style="-ms-flex-align: center; -ms-flex-wrap: wrap; align-items: center; display: flex; flex-wrap: wrap; height: 80px;">
+                            <div class="left" style="margin-left: 30px;">
+                                <img src="http://pdev.bonum.credit/assets/email/logo.png"
+                                     width="252" height="50" alt="logo bonum"
+                                     style="-ms-interpolation-mode: bicubic; border: 0; height: 50px; line-height: 100%; max-width: 100%; outline: none; text-decoration: none; width: 252px;">
+                            </div>
+                            <div class="right"
+                                 style="vertical-align: middle; width: 270px;">
+                                Global <span class="blue"
+                                             style="color: #009cff;"> crypto loans </span>
+                                and <span class="blue" style="color: #009cff;">deposits</span>
+                            </div>
+                        </div>
+
+
+                    </h1>
+                    <p mc:edit="email_subtitle" class="email-subtitle"
+                       style="-ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%;">
+
+                    </p>
+                </td>
+            </tr>
+        </table>
+
+
+        <div mc:edit="body" id="template-content-content"
+             style="font-family: 'Ubuntu', sans-serif; font-size: 16px; font-weight: 400; line-height: 150%; margin: 0 0; max-width: 560px; text-align: left; width: 90%;">
+
+
+            <h2 class="title" style="color: #fff;">Welcome to Bonum!</h2>
+            <p class="info"
+               style="-ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; color: #fff; margin-bottom: 40px;">
+                This email was sent automatically by Bonum Platform in response
+                to your request to confirm your email address.
+                Click the button to confirm your email address.
+            </p>
+
+            <a class="btn"
+               href="{{ protocol }}://{{ default_host }}/exchanger/{{ id }}"
+               style="-ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; background: #009cff; border: 2px solid #009cff; border-radius: 30px; box-sizing: border-box; color: #fff; cursor: pointer; font-size: 14px; font-weight: bold; margin-bottom: 32px; padding: 15px 30px;">
+                Go to exchange information
+            </a>
+
+            <p class="small"
+               style="-ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; color: #fff !important; font-family: 'Ubuntu', sans-serif; font-size: 12px; font-style: normal; font-weight: normal; line-height: 18px; margin-bottom: 60px; margin-top: 40px;">
+                Or open link:<br>
+                <a class="link"
+                   href="{{ protocol }}://{{ default_host }}/exchanger/{{ id }}"
+                   style="-ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; color: #fff !important;">
+                    {{ protocol }}://{{ default_host }}/exchanger/{{ id }}
+                </a>
+
+            </p>
+
+            <hr style="background: #4a4a55; border: none; height: 1px; margin-bottom: 35px;">
+
+
+        </div>
+
+
+        <table border="0" cellpadding="0" cellspacing="0"
+               id="template-content-footer" width="100%"
+               style="-ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; border-collapse: collapse !important; margin-bottom: 50px; mso-table-lspace: 0pt; mso-table-rspace: 0pt;">
+            <tr>
+                <td align="center" valign="top" mc:edit="email_footer"
+                    style="-ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; mso-table-lspace: 0pt; mso-table-rspace: 0pt;">
+
+                    <p style="-ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; color: #cfcfcf !important; font-family: 'Ubuntu'; font-size: 12px; line-height: 18px; margin: 20px 0; padding-left: 30px; padding-right: 30px; text-align: left;">
+                        Bonum 2017-2019. All rights reserved</p>
+                    <p style="-ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; color: #cfcfcf !important; font-family: 'Ubuntu'; font-size: 12px; line-height: 18px; margin: 20px 0; margin-bottom: 50px; padding-left: 30px; padding-right: 30px; text-align: left;">
+                        Our mailing address is: <a class="link"
+                                                   href="support-credit@bonumchain.com"
+                                                   style="-ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; color: #cfcfcf !important;">support-credit@bonumchain.com</a>
+                    </p>
+
+                </td>
+            </tr>
+        </table>
+
+    </center>
+
+</center>
+</body>
+</html>

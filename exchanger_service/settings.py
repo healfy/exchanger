@@ -158,6 +158,15 @@ BTC_ADDRESS = os.getenv('EXCHANGER_BTC_ADDRESS', 'mtQGkRpBVRDdRBwVkCbtGArdCYmiqk
 BTC_EXTERNAL_ID = os.getenv('BTC_EXTERNAL_ID', 23)
 ETH_EXTERNAL_ID = os.getenv('ETH_EXTERNAL_ID', 24)
 
+EMAIL_BACKEND = "anymail.backends.mailgun.EmailBackend"
+
+EMAIL_HOST = 'smtp.mailgun.org'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'postmaster@mail.bonumchain.com'
+EMAIL_USE_TLS = True
+DEFAULT_FROM_EMAIL = 'dev@email.bonumchain.com'
+DEFAULT_HOST = 'pdev.bonum.credit'
+
 # Internationalization
 # https://docs.djangoproject.com/en/2.2/topics/i18n/
 

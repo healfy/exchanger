@@ -29,7 +29,7 @@ class Base(models.Model):
     objects = BaseManager()
     all_objects = models.Manager()
 
-    BASE_FIELDS = ('deleted_at', 'updated_at', 'is_deleted')
+    BASE_FIELDS = ('deleted_at', 'updated_at', 'is_deleted',)
 
     def save(self, **kwargs):
         self.updated_at = datetime.now()
@@ -122,10 +122,10 @@ class TransactionBase(Base):
                                         blank=True,
                                         db_index=True)
     currency = models.ForeignKey(Currency,
-                                    verbose_name='Transaction currency',
-                                    on_delete=models.CASCADE,
-                                    related_name='%(app_label)s_%(class)s_'
-                                                 'related')
+                                 verbose_name='Transaction currency',
+                                 on_delete=models.CASCADE,
+                                 related_name='%(app_label)s_%(class)s_'
+                                              'related')
 
     uuid = models.UUIDField(verbose_name='Internal hash for identification trx',
                             default=uuid.uuid4)
@@ -337,6 +337,11 @@ class ExchangeHistory(Base):
 
     to_address = models.CharField(verbose_name='Address to which we are send',
                                   max_length=50)
+
+    uuid = models.UUIDField(verbose_name='Internal hash',
+                            default=uuid.uuid4,
+                            unique=True,
+                            editable=False)
 
     @property
     def state(self):

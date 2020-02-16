@@ -109,7 +109,7 @@ class TestExchangerApi(TestBase):
             self.assertEqual(obj.to_currency.slug, self.data['to_currency'])
 
     def get_obj(self, resp):
-        obj = ExchangeHistory.objects.filter(id=resp.json()['id'])
+        obj = ExchangeHistory.objects.filter(uuid=resp.json()['uuid'])
         self.assertIsNotNone(obj)
         return obj.get()
 
@@ -332,7 +332,7 @@ class TestStates(TestBase):
         self.assertIsNone(self.exchanger.transaction_input.trx_hash)
         _hash = str(uuid4())
         resp = self.client.post(
-            f'/api/exchange/{self.exchanger.id}/update_transaction/',
+            f'/api/exchange/{self.exchanger.uuid}/update_transaction/',
             data={'trx_hash': _hash})
         self.assertEqual(200,  resp.status_code)
         self.exchanger.refresh_from_db()
@@ -346,7 +346,7 @@ class TestStates(TestBase):
         self.assertIsNone(self.exchanger.transaction_input.trx_hash)
         _hash = str(uuid4())
         self.client.post(
-            f'/api/exchange/{self.exchanger.id}/update_transaction/',
+            f'/api/exchange/{self.exchanger.uuid}/update_transaction/',
             data={'trx_hash': _hash})
         self.exchanger.refresh_from_db()
         self.assertEqual(self.exchanger.state, states.WaitingDepositState)
