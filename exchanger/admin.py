@@ -19,7 +19,8 @@ class InputTransactionAdmin(BaseAdmin):
               'confirmed_at', 'currency', 'uuid')
     list_display = ('currency', 'to_address', 'from_address')
 
-    readonly_fields = ('status', 'created_at')
+    readonly_fields = ('status', 'to_address', 'from_address',
+                       'trx_hash', 'value', 'uuid')
 
 
 class OutPutTransactionAdmin(InputTransactionAdmin):
@@ -27,8 +28,28 @@ class OutPutTransactionAdmin(InputTransactionAdmin):
 
 
 class ExchangeHistoryAdmin(BaseAdmin):
-    readonly_fields = ('status', 'created_at')
-    list_display = ('user_email', 'from_currency', 'to_currency', 'fee')
+    readonly_fields = ExchangeHistory.READ_ONLY_FIELDS
+    list_display = ('user_email', 'from_currency', 'to_currency', 'uuid')
+    exclude = ('deleted_at', 'is_deleted', )
+    fieldsets = (
+        ('Main info', {
+            'fields': ('user_email', 'uuid',
+                       'from_currency', 'to_currency',
+                       'ingoing_amount', 'outgoing_amount')
+        }),
+        ('Read only info', {
+            'fields': ('status', 'issue_rate_from', 'issue_rate_to', 'fee')
+        }),
+        ('InputTransaction info', {
+            'fields': ('transaction_input',)
+        }),
+        ('OutPutTransaction', {
+            'fields': ('transaction_output',)
+        }),
+    )
+
+    def trx_hash(self, instance: ExchangeHistory):
+        return instance.transaction_input.trx_hash
 
 
 class CurrencyAdmin(BaseAdmin):

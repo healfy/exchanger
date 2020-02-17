@@ -265,6 +265,15 @@ class ExchangeHistory(Base):
         (WAITING_HASH, 'WAITING INPUT TRANSACTION HASH'),
     )
 
+    READ_ONLY_FIELDS = ('fee',
+                        'issue_rate_from',
+                        'issue_rate_to',
+                        'status',
+                        'uuid',
+                        'ingoing_amount',
+                        'outgoing_amount'
+                        )
+
     user_email = models.EmailField(verbose_name='Email of user')
 
     fee = models.DecimalField(verbose_name='Transaction fee',
