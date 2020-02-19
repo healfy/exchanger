@@ -360,7 +360,6 @@ class ExchangeHistory(Base):
         """
         return states.state_by_status(self.status)
 
-    @nested_commit_on_success
     def request_update(self, stop_status: int = None):
         """Update  state with state inner transition. Commit.
         Should use for initiative update without params.

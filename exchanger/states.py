@@ -574,8 +574,8 @@ class OutgoingRunningState(ConfirmTransactionMixin,
 
 
 class CreatingOutGoingState(CreateTransferMixin,
-                            State,
-                            SetTransactionMixin):
+                            SetTransactionMixin,
+                            State):
     """
     Successful case.
     State in which we set output transaction to exchange object and
