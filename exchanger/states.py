@@ -272,11 +272,13 @@ class CreateTransferMixin:
         wallet_id = getattr(exchange_object, cls.wallet_type)
         transfer = exchange_object.transaction_output.transfer_dict()
 
-        cls.gw.create_transfer(
+        resp = cls.gw.create_transfer(
             wallet_id=wallet_id,
             **transfer
         )
-        return cls.next_state.set(exchange_object)
+        if resp['header']['status'] in cls.gw.ALLOWED_STATUTES:
+            return cls.next_state.set(exchange_object)
+        return exchange_object.state
 
 
 class ConfirmTransactionMixin:
