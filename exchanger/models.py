@@ -128,7 +128,8 @@ class TransactionBase(Base):
                                               'related')
 
     uuid = models.UUIDField(verbose_name='Internal hash for identification trx',
-                            default=uuid.uuid4)
+                            default=uuid.uuid4,
+                            unique=True)
 
     def confirm(self,
                 status: int,
