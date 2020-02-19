@@ -29,7 +29,8 @@ class OutPutTransactionAdmin(InputTransactionAdmin):
 
 class ExchangeHistoryAdmin(BaseAdmin):
     readonly_fields = ExchangeHistory.READ_ONLY_FIELDS
-    list_display = ('user_email', 'from_currency', 'to_currency', 'uuid')
+    list_display = ('user_email', 'from_currency', 'to_currency', 'uuid',
+                    'status')
     exclude = ('deleted_at', 'is_deleted', )
     fieldsets = (
         ('Main info', {

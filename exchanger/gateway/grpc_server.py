@@ -26,15 +26,19 @@ class UpdateMixin:
     @nested_commit_on_success
     def action(self, data, ingoing=False):
         model = self.input_model if ingoing else self.output_model
+        counter = 0
         for trx in data:
-            model.objects.filter(uuid=trx['uuid'],
-                                 status__in=model.ACTIVE_STATUTES).update(
+            counter += model.objects.filter(uuid=trx['uuid'],
+                                            status__in=model.ACTIVE_STATUTES
+                                            ).update(
                 trx_hash=trx['trx_hash'],
                 value=trx['value'],
                 confirmed_at=datetime.now(),
                 status=model.CONFIRMED
             )
         self.message.header.status = exchanger_pb2.SUCCESS
+        self.message.header.description = f'Updated  {counter} ' \
+                                          f'of {model.__name__} objects'
 
     def validate_request(self, request):
         return self._validate(request)
@@ -57,6 +61,14 @@ class UpdateMixin:
     def _execute(self, request, ingoing=False):
         data = self.validate_request(request)
         self.action(data, ingoing=ingoing)
+        self.update_exchanger_objects(data, ingoing=ingoing)
+
+    def update_exchanger_objects(self, data, ingoing=False):
+        model = self.input_model if ingoing else self.output_model
+        for trx in data:
+            t = model.objects.filter(uuid=trx['uuid']).first()
+            if t:
+                t.exchange_history.request_update()
 
 
 class ExchangerService(exchanger_pb2_grpc.ExchangerServiceServicer,
