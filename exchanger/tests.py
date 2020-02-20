@@ -411,7 +411,7 @@ class TestStates(TestBase):
         self.assertEqual(trx_out.currency, self.exchanger.to_currency)
 
     @patch.object(wallets_service_gw, '_base_request', return_value={})
-    @patch.object(states.CreatingOutGoingState.gw, 'create_transfer',
+    @patch.object(states.CreatingOutGoingState.gw, '_base_request',
                   return_value={"header": {"status": transactions_pb2.SUCCESS}})
     @patch.object(states.WaitingDepositState, 'validate_value',
                   return_value=True)
@@ -424,15 +424,13 @@ class TestStates(TestBase):
         trx.trx_hash = uuid4()
         trx.status = TransactionBase.CONFIRMED
         trx.save()
-        self.exchanger.request_update(
-            stop_status=ExchangeHistory.CREATING_OUTGOING_TRANSFER)
+        self.exchanger.request_update()
+        self.exchanger.request_update()
         self.exchanger.refresh_from_db()
-        self.exchanger.request_update(
-            stop_status=ExchangeHistory.OUTGOING_RUNNING)
         self.assertEqual(self.exchanger.state, states.OutgoingRunningState)
 
     @patch.object(wallets_service_gw, '_base_request', return_value={})
-    @patch.object(states.CreatingOutGoingState.gw, 'create_transfer',
+    @patch.object(states.CreatingOutGoingState.gw, '_base_request',
                   return_value={"header": {"status": transactions_pb2.ERROR}})
     @patch.object(states.WaitingDepositState, 'validate_value',
                   return_value=True)

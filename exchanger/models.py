@@ -249,21 +249,25 @@ class ExchangeHistory(Base):
     DEPOSIT_RETURNED = 10
     CALCULATING = 11
     WAITING_HASH = 12
+    CREATING_OUTPUT_TRANSACTION = 13
+    CREATE_RETURN_TRANSFER = 14
 
     EXCHANGE_STATUTES = (
         (UNKNOWN, 'UNKNOWN STATUS'),
         (NEW, 'NEW'),
         (WAITING_DEPOSIT, 'WAITING MONEY FROM USER'),
         (INSUFFICIENT_DEPOSIT, 'MONEY TRANSFER IS INSUFFICIENT'),
-        (DEPOSIT_PAID, 'DEPOSIT_PAID'),
+        (DEPOSIT_PAID, 'DEPOSIT PAID'),
         (CREATING_OUTGOING_TRANSFER, 'CREATING MONEY TRANSFER TO USER'),
-        (OUTGOING_RUNNING, 'TRANSFER IN STATUS SUCCESS'),
-        (CLOSED, 'EXCHANGE IS GONE'),
+        (OUTGOING_RUNNING, 'WAITING TO CONFIRM OUTPUT TRANSFER'),
+        (CLOSED, 'EXCHANGE IS DONE'),
         (FAILED, 'FAILED EXCHANGE'),
         (RETURNING_DEPOSIT, 'RETURNING_DEPOSIT'),
         (DEPOSIT_RETURNED, 'DEPOSIT_RETURNED'),
         (CALCULATING, 'CALCULATING'),
         (WAITING_HASH, 'WAITING INPUT TRANSACTION HASH'),
+        (CREATING_OUTPUT_TRANSACTION, 'CREATING OUTPUT TRANSACTION'),
+        (CREATE_RETURN_TRANSFER, 'CREATING RETURN TRANSACTION'),
     )
 
     READ_ONLY_FIELDS = ('fee',
@@ -361,6 +365,7 @@ class ExchangeHistory(Base):
         """
         return states.state_by_status(self.status)
 
+    @nested_commit_on_success
     def request_update(self, stop_status: int = None):
         """Update  state with state inner transition. Commit.
         Should use for initiative update without params.

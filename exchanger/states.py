@@ -384,8 +384,7 @@ class WaitingHashState(State):
             cls,
             exchange_object: models.ExchangeHistory
     ) -> typing.Type['State']:
-
-        try:
+        if exchange_object.transaction_input.trx_hash:
             wallets_service_gw.add_input_transaction(
                 trx_hash=exchange_object.transaction_input.trx_hash,
                 wallet_address=exchange_object.ingoing_wallet.address,
@@ -395,8 +394,6 @@ class WaitingHashState(State):
                 uuid=exchange_object.transaction_input.uuid
             )
             return WaitingDepositState.set(exchange_object)
-        except ValueError as exc:
-            logger.error(f'{cls.__class__.__name__} got {exc}')
         return cls
 
 
@@ -454,9 +451,8 @@ class ReturningDepositState(ConfirmTransactionMixin,
     trx_attr = 'transaction_output'
 
 
-class InsufficientDepositState(CreateTransferMixin,
-                               State,
-                               SetTransactionMixin):
+class InsufficientDepositState(SetTransactionMixin,
+                               State):
     """
     Failure case.
     State in which user has already sent deposit to platform wallet but the
@@ -466,10 +462,7 @@ class InsufficientDepositState(CreateTransferMixin,
 
     id = models.ExchangeHistory.INSUFFICIENT_DEPOSIT
     model = models.OutPutTransaction
-    wallet_type = 'ingoing_wallet_id'
     trx_attr = 'transaction_output'
-    next_state = ReturningDepositState
-    gw = trx_service_gw
 
     @classmethod
     def set(
@@ -486,6 +479,25 @@ class InsufficientDepositState(CreateTransferMixin,
             currency=exchange_object.transaction_input.currency
         )
         return super().set(exchange_object)
+
+    @classmethod
+    def _inner_transition(
+            cls,
+            exchange_object: models.ExchangeHistory
+    ) -> typing.Type['State']:
+        if exchange_object.transaction_output:
+            return CreateReturnTransferState.set(exchange_object)
+        return cls
+
+
+class CreateReturnTransferState(CreateTransferMixin,
+                                State):
+    id = models.ExchangeHistory.CREATE_RETURN_TRANSFER
+    model = models.OutPutTransaction
+    trx_attr = 'transaction_output'
+    wallet_type = 'outgoing_wallet_id'
+    next_state = ReturningDepositState
+    gw = trx_service_gw
 
 
 # Success states cases
@@ -524,7 +536,7 @@ class CalculatingState(ValidateInputTransactionMixin,
             exchange_object: models.ExchangeHistory
     ) -> typing.Type['State']:
 
-        return CreatingOutGoingState.set(exchange_object)
+        return CreateOutputTransactionState.set(exchange_object)
 
 
 class ClosedState(State):
@@ -573,9 +585,8 @@ class OutgoingRunningState(ConfirmTransactionMixin,
     next_state = ClosedState
 
 
-class CreatingOutGoingState(CreateTransferMixin,
-                            SetTransactionMixin,
-                            State):
+class CreateOutputTransactionState(SetTransactionMixin,
+                                   State):
     """
     Successful case.
     State in which we set output transaction to exchange object and
@@ -584,12 +595,9 @@ class CreatingOutGoingState(CreateTransferMixin,
     the US dollar to the issue currency
     """
 
-    id = models.ExchangeHistory.CREATING_OUTGOING_TRANSFER
+    id = models.ExchangeHistory.CREATING_OUTPUT_TRANSACTION
     model = models.OutPutTransaction
     trx_attr = 'transaction_output'
-    wallet_type = 'outgoing_wallet_id'
-    next_state = OutgoingRunningState
-    gw = trx_service_gw
 
     @classmethod
     def set(
@@ -607,6 +615,33 @@ class CreatingOutGoingState(CreateTransferMixin,
         )
         return super().set(exchange_object)
 
+    @classmethod
+    def _inner_transition(
+            cls,
+            exchange_object: models.ExchangeHistory
+    ) -> typing.Type['State']:
+        if exchange_object.transaction_output:
+            return CreatingOutGoingState.set(exchange_object)
+        return cls
+
+
+class CreatingOutGoingState(CreateTransferMixin,
+                            State):
+    """
+    Successful case.
+    State in which we set output transaction to exchange object and
+    creating money transfer by external service "Transactions".
+    We must also set a transaction fee and fix the exchange rate of
+    the US dollar to the issue currency
+    """
+
+    id = models.ExchangeHistory.CREATING_OUTGOING_TRANSFER
+    model = models.OutPutTransaction
+    trx_attr = 'transaction_output'
+    wallet_type = 'outgoing_wallet_id'
+    next_state = OutgoingRunningState
+    gw = trx_service_gw
+
 
 def state_by_status(status: typing.Union[int, State]) -> typing.Type['State']:
     __CLASSES__ = {c.id: c for c in utils.all_subclasses(State)}
@@ -619,9 +654,11 @@ __STATES_TRANSACTIONS__ = {
     WaitingHashState: [WaitingDepositState],
     WaitingDepositState: [DepositPaidState, InsufficientDepositState],
     DepositPaidState: [CalculatingState],
-    CalculatingState: [CreatingOutGoingState],
-    InsufficientDepositState: [ReturningDepositState],
+    CalculatingState: [CreateOutputTransactionState],
+    InsufficientDepositState: [CreateReturnTransferState],
+    CreateReturnTransferState: [ReturningDepositState],
     ReturningDepositState: [FailedState],
+    CreateOutputTransactionState: [CreatingOutGoingState, ReturningDepositState],
     CreatingOutGoingState: [OutgoingRunningState],
     OutgoingRunningState: [ClosedState],
 }
