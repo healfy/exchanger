@@ -658,7 +658,7 @@ __STATES_TRANSACTIONS__ = {
     InsufficientDepositState: [CreateReturnTransferState],
     CreateReturnTransferState: [ReturningDepositState],
     ReturningDepositState: [FailedState],
-    CreateOutputTransactionState: [CreatingOutGoingState, ReturningDepositState],
+    CreateOutputTransactionState: [CreatingOutGoingState],
     CreatingOutGoingState: [OutgoingRunningState],
     OutgoingRunningState: [ClosedState],
 }
