@@ -276,9 +276,13 @@ class CreateTransferMixin:
             wallet_id=wallet_id,
             **transfer
         )
-        if resp['header']['status'] in cls.gw.ALLOWED_STATUTES:
+        if cls.get_status_from_resp(resp) in cls.gw.ALLOWED_STATUTES:
             return cls.next_state.set(exchange_object)
         return exchange_object.state
+
+    @classmethod
+    def get_status_from_resp(cls, response: dict):
+        return cls.gw.MODULE.ResponseStatus.Value(response['header']['status'])
 
 
 class ConfirmTransactionMixin:
