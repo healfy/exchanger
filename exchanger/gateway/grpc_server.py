@@ -67,7 +67,7 @@ class UpdateMixin:
         model = self.input_model if ingoing else self.output_model
         for trx in data:
             t = model.objects.filter(uuid=trx['uuid']).first()
-            if t:
+            if t and t.exchange_history:
                 t.exchange_history.request_update()
 
 

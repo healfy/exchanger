@@ -167,6 +167,9 @@ EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = 'dev@email.bonumchain.com'
 DEFAULT_HOST = 'pdev.bonum.credit'
 
+REDIS_HOST = os.environ.get('REDIS_HOST', 'localhost')
+REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD', '')
+REDIS_NAMESPACE = 'exchanger'
 # Internationalization
 # https://docs.djangoproject.com/en/2.2/topics/i18n/
 

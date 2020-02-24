@@ -6,6 +6,8 @@ from .managers import BaseManager
 from .managers import CurrencyManager
 from .utils import nested_commit_on_success
 from .utils import all_kwargs_required
+from .locks import nowait_lock
+from .locks import connect_redis
 
 
 class Base(models.Model):
@@ -369,12 +371,17 @@ class ExchangeHistory(Base):
         """
         return states.state_by_status(self.status)
 
+    @nested_commit_on_success
     def request_update(self, stop_status: int = None):
         """Update  state with state inner transition. Commit.
         Should use for initiative update without params.
         :param stop_status status u want to stop, if None forward if possible.
         """
-        self.state.make_inner_transition(self, stop_status=stop_status)
+        redis = connect_redis()
+        with nowait_lock(redis) as locker:
+            key = ExchangeHistory.lock_name_by_id(self.id)
+            if locker.lock(key, blocking=True):
+                self.state.make_inner_transition(self, stop_status=stop_status)
 
     @nested_commit_on_success
     def outer_update(self, stop_status: int = None, **params):
@@ -383,11 +390,22 @@ class ExchangeHistory(Base):
         Update parameters are passing using params.
         :param stop_status status u want to stop, if None forward if possible.
         """
-        self.state.make_outer_transition(self, stop_status=stop_status, **params)
+        redis = connect_redis()
+        with nowait_lock(redis) as locker:
+            key = ExchangeHistory.lock_name_by_id(self.id)
+            if locker.lock(key, blocking=True):
+                self.state.make_outer_transition(self,
+                                                 stop_status=stop_status,
+                                                 **params)
 
     def __str__(self):
         return f'Exchange history id: {self.id} bound with user' \
                f' {self.user_email}'
+
+    @classmethod
+    def lock_name_by_id(cls, _id: int) -> str:
+        """Return lock key for model object by id."""
+        return f'{cls.__name__}_id_{_id}'
 
     @property
     def to_info_message(self):
