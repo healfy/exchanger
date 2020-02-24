@@ -5,7 +5,6 @@ from django.db import models
 from .managers import BaseManager
 from .managers import CurrencyManager
 from .utils import nested_commit_on_success
-from django.db import transaction
 from .utils import all_kwargs_required
 
 
@@ -362,9 +361,6 @@ class ExchangeHistory(Base):
                             unique=True,
                             editable=False)
 
-    def queryset(self):
-        return self.__class__.objects.filter(id=self.id)
-
     @property
     def state(self):
         from exchanger import states
@@ -378,9 +374,7 @@ class ExchangeHistory(Base):
         Should use for initiative update without params.
         :param stop_status status u want to stop, if None forward if possible.
         """
-        with transaction.atomic():
-            obj = self.queryset().select_for_update(nowait=True).get()
-            obj.state.make_inner_transition(self, stop_status=stop_status)
+        self.state.make_inner_transition(self, stop_status=stop_status)
 
     @nested_commit_on_success
     def outer_update(self, stop_status: int = None, **params):
