@@ -24,15 +24,15 @@ class BGWTransactionSerializer(serializers.Serializer):
 
     def validate(self, data):
         data = super().validate(data)
-        if self.instance.currency.slug != data['currencySlug']:
+        if self.instance.currency.slug.lower() != data['currencySlug'].lower():
             raise serializers.ValidationError(
                 f"Invalid transaction hash {data['hash']}"
             )
-        if self.instance.to_address != data['to']:
+        if self.instance.to_address.lower() != data['to'].lower():
             raise serializers.ValidationError(
                 f"Invalid transaction hash {data['hash']}"
             )
-        if self.instance.from_address != data['from_']:
+        if self.instance.from_address.lower() != data['from_'].lower():
             raise serializers.ValidationError(
                 f"Invalid transaction hash {data['hash']}"
             )
