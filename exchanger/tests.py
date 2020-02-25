@@ -412,7 +412,7 @@ class TestStates(TestBase):
 
     @patch.object(wallets_service_gw, '_base_request', return_value={})
     @patch.object(states.CreatingOutGoingState.gw, '_base_request',
-                  return_value={"header": {"status": transactions_pb2.SUCCESS}})
+                  return_value={"header": {"status": 'SUCCESS'}})
     @patch.object(states.WaitingDepositState, 'validate_value',
                   return_value=True)
     def test_outgoing_running_state(self, *args):
@@ -431,7 +431,7 @@ class TestStates(TestBase):
 
     @patch.object(wallets_service_gw, '_base_request', return_value={})
     @patch.object(states.CreatingOutGoingState.gw, '_base_request',
-                  return_value={"header": {"status": transactions_pb2.ERROR}})
+                  return_value={"header": {"status": 'ERROR'}})
     @patch.object(states.WaitingDepositState, 'validate_value',
                   return_value=True)
     def test_failed_creating_transfer(self, *args):
@@ -452,7 +452,7 @@ class TestStates(TestBase):
 
     @patch.object(wallets_service_gw, '_base_request', return_value={})
     @patch.object(states.CreatingOutGoingState.gw, 'create_transfer',
-                  return_value={"header": {"status": transactions_pb2.SUCCESS}})
+                  return_value={"header": {"status": 'SUCCESS'}})
     @patch.object(states.WaitingDepositState, 'validate_value',
                   return_value=True)
     def test_closed_state(self, *args):
@@ -497,7 +497,7 @@ class TestStates(TestBase):
     @patch.object(states.WaitingDepositState, 'validate_value',
                   return_value=False)
     @patch.object(states.CreatingOutGoingState.gw, 'create_transfer',
-                  return_value={"header": {"status": transactions_pb2.SUCCESS}})
+                  return_value={"header": {"status": 'SUCCESS'}})
     def test_returning_deposit_state(self, *args):
         self.update_obj(2)
         self.exchanger.status = ExchangeHistory.WAITING_DEPOSIT
@@ -516,7 +516,7 @@ class TestStates(TestBase):
     @patch.object(states.WaitingDepositState, 'validate_value',
                   return_value=False)
     @patch.object(states.CreateReturnTransferState.gw, 'create_transfer',
-                  return_value={"header": {"status": transactions_pb2.ERROR}})
+                  return_value={"header": {"status": 'ERROR'}})
     def test_returning_deposit_state_failed(self, *args):
         self.update_obj(2)
         self.exchanger.status = ExchangeHistory.WAITING_DEPOSIT
@@ -535,7 +535,7 @@ class TestStates(TestBase):
     @patch.object(states.WaitingDepositState, 'validate_value',
                   return_value=False)
     @patch.object(states.CreatingOutGoingState.gw, 'create_transfer',
-                  return_value={"header":{"status": transactions_pb2.SUCCESS}})
+                  return_value={"header": {"status": 'SUCCESS'}})
     def test_failed_state(self, *args):
         self.update_obj(2)
         self.exchanger.status = ExchangeHistory.WAITING_DEPOSIT

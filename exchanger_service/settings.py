@@ -170,6 +170,7 @@ DEFAULT_HOST = 'pdev.bonum.credit'
 REDIS_HOST = os.environ.get('REDIS_HOST', 'localhost')
 REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD', '')
 REDIS_NAMESPACE = 'exchanger'
+TRANSACTION_DELTA = 30  # minutes
 # Internationalization
 # https://docs.djangoproject.com/en/2.2/topics/i18n/
 

@@ -2,10 +2,12 @@ import grpc
 import typing
 from django.conf import settings
 from exchanger.gateway.base import BaseGateway
+from exchanger.models import InputTransaction
 from exchanger.rpc.blockchain_gateway_pb2_grpc import \
     blockchain__gateway__pb2 as blockchain_gateway_pb2
 from exchanger.rpc import blockchain_gateway_pb2_grpc
 from .exceptions import BlockchainBadResponseException
+from .serializers import BGWTransactionSerializer
 
 
 class BlockChainServiceGateway(BaseGateway):
@@ -36,3 +38,26 @@ class BlockChainServiceGateway(BaseGateway):
                                                client.CheckAddress)
             response_data['isinstance'] = response_data.get('isinstance', False)
         return response_data
+
+    def get_transaction(
+            self,
+            _hash: str,
+            currency_slug: str,
+            to_address,
+            instance: InputTransaction
+    ):
+
+        request_message = self.MODULE.GetTransactionRequest(
+            hash=_hash, currencySlug=currency_slug, to=to_address
+        )
+        with grpc.insecure_channel(self.GW_ADDRESS) as channel:
+            client = self.ServiceStub(channel)
+            response_data = self._base_request(
+                request_message, client.GetTransaction,
+                extend_statutes=(blockchain_gateway_pb2.PENDING,))
+
+            data = response_data['transaction']
+
+            serializer = BGWTransactionSerializer(data=data, instance=instance)
+
+        return serializer

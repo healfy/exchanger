@@ -110,6 +110,8 @@ class ExchangeHistorySerializer(serializers.ModelSerializer,
                 return self.external_svc_validate(data)
             except Exception as exc:
                 raise serializers.ValidationError(exc)
+        data['to_address'] = data['to_address'].lower()
+        data['from_address'] = data['from_address'].lower()
         return data
 
     def validate_from_currency(
@@ -157,12 +159,12 @@ class ExchangeHistorySerializer(serializers.ModelSerializer,
     def validate_from_address(self, address: str):
         if not address:
             raise serializers.ValidationError('Required field from_address')
-        return address.lower()
+        return address
 
     def validate_to_address(self, address: str):
         if not address:
             raise serializers.ValidationError('Required field to_address')
-        return address.lower()
+        return address
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
@@ -184,7 +186,7 @@ class TrxHashSerializer(serializers.Serializer):
         model = InputTransaction
         exclude = '__all__'
 
-    def validate_trx_hash(self, _hash:str):
+    def validate_trx_hash(self, _hash: str):
         if self.Meta.model.objects.filter(trx_hash=_hash).exists():
             return serializers.ValidationError(
                 f'Transaction with hash {_hash} already in base'

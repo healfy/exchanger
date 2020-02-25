@@ -3,12 +3,14 @@ from django.conf import settings
 from rest_framework import viewsets
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.serializers import ValidationError
 from rest_framework import status
 from rest_framework.decorators import action
 from drf_yasg.utils import swagger_auto_schema
 from exchanger import states
 from exchanger.currencies_gateway.serializers import CurrencySerializer
 from exchanger.gateway import currency_service_gw
+from exchanger.gateway import bgw_service_gw
 from exchanger.models import (
     ExchangeHistory,
     Currency
@@ -35,15 +37,27 @@ class UpdateTrxMixin:
     def update_transaction(self, request, *args, **kwargs):
         instance = self.get_object()
         trx_hash = self.get_trx_hash(request)
-        instance.set_input_transaction_hash(trx_hash=trx_hash)
-        instance.request_update()
-        serializer = self.get_serializer(instance)
-        return Response(serializer.data)
+        try:
+            self.validate_hash(instance, trx_hash)
+            instance.set_input_transaction_hash(trx_hash=trx_hash)
+            instance.request_update()
+            serializer = self.get_serializer(instance)
+            return Response(serializer.data)
+        except ValidationError as exc:
+            return Response(data={'error': exc.detail})
 
     def get_trx_hash(self, request):
         serializer = self.additional_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         return serializer.data['trx_hash']
+
+    def validate_hash(self, instance: ExchangeHistory, trx_hash):
+        currency_slug = instance.transaction_input.currency.slug
+        to_address = instance.transaction_input.to_address
+        input_trx = instance.transaction_input
+        serializer = bgw_service_gw.get_transaction(
+            trx_hash, currency_slug, to_address, input_trx)
+        serializer.is_valid(raise_exception=True)
 
 
 class ExchangeHistoryViewSet(viewsets.ModelViewSet,
