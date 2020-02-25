@@ -377,7 +377,7 @@ class TestStates(TestBase):
                         'to': trx.to_address,
                         'hash': _hash,
                         'currencySlug': trx.currency.slug,
-                        'value': trx.value,
+                        'value': str(trx.value),
                         'time': time}}
         ) as mock:
             self.client.post(
@@ -413,7 +413,7 @@ class TestStates(TestBase):
                         'to': trx.to_address,
                         'hash': _hash,
                         'currencySlug': trx.currency.slug,
-                        'value': trx.value,
+                        'value': str(trx.value),
                         'time': time}}
         ) as mock:
             resp = self.client.post(

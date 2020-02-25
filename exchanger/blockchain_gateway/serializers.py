@@ -11,11 +11,8 @@ class BGWTransactionSerializer(serializers.Serializer):
     to = serializers.CharField()
     currencySlug = serializers.CharField()
     time = serializers.IntegerField()
-    value = serializers.DecimalField(decimal_places=10, max_digits=14)
     hash = serializers.CharField()
     isOutput = serializers.BooleanField(default=False)
-    fee = serializers.DecimalField(decimal_places=10, max_digits=14,
-                                   required=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
