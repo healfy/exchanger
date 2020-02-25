@@ -2,17 +2,12 @@ import pytz
 from datetime import datetime
 from django.conf import settings
 from rest_framework import serializers
-from exchanger.models import InputTransaction
 
 
 class BGWTransactionSerializer(serializers.Serializer):
 
-    class Meta:
-        model = InputTransaction
-        exclude = '__all__'
-
     id = serializers.IntegerField(required=False)
-    from_address = serializers.CharField(source='from')
+    from_ = serializers.CharField()
     to = serializers.CharField()
     currencySlug = serializers.CharField()
     time = serializers.IntegerField()
@@ -21,6 +16,14 @@ class BGWTransactionSerializer(serializers.Serializer):
     isOutput = serializers.BooleanField(default=False)
     fee = serializers.DecimalField(decimal_places=8, max_digits=12,
                                    required=False)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # hack for parse 'from' value from response
+        for name in list(self.fields.keys()):
+            if name.endswith("_"):
+                field = self.fields.pop(name)
+                self.fields[name[:-1]] = field
 
     def validate(self, data):
         data = super().validate(data)
@@ -32,14 +35,15 @@ class BGWTransactionSerializer(serializers.Serializer):
             raise serializers.ValidationError(
                 f"Invalid transaction hash {data['hash']}"
             )
-        if self.instance.from_address != data['from_address']:
+        if self.instance.from_address != data['from_']:
             raise serializers.ValidationError(
                 f"Invalid transaction hash {data['hash']}"
             )
         time_created = datetime.fromtimestamp(int(data['time'])).replace(
                 tzinfo=pytz.utc)
         delta = datetime.now().replace(tzinfo=pytz.utc) - time_created
-        if delta.min > settings.TRANSACTION_DELTA:
+        total_minutes, second = divmod(delta.seconds, 60)
+        if total_minutes > settings.TRANSACTION_DELTA:
             raise serializers.ValidationError(
                 f"Invalid transaction hash {data['hash']}"
             )

@@ -27,6 +27,12 @@ class BlockChainServiceGateway(BaseGateway):
             address: str = None,
             currency_slug: str = None
     ) -> typing.Dict:
+        """
+        Function to validate addresses which were entered by the user
+
+        :param address: current address
+        :param currency_slug: currency of address
+        """
 
         request_message = self.MODULE.CheckAddressRequest(
             address=address,
@@ -45,8 +51,15 @@ class BlockChainServiceGateway(BaseGateway):
             currency_slug: str,
             to_address,
             instance: InputTransaction
-    ):
+    ) -> BGWTransactionSerializer:
+        """
 
+        :param _hash: hash of current transaction
+        :param currency_slug: currency of current transaction
+        :param to_address: target address of current transaction
+        :param instance: InputTransaction linked with exchanger object and
+        current transaction
+        """
         request_message = self.MODULE.GetTransactionRequest(
             hash=_hash, currencySlug=currency_slug, to=to_address
         )

@@ -3,7 +3,6 @@ from django.conf import settings
 from rest_framework import viewsets
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.serializers import ValidationError
 from rest_framework import status
 from rest_framework.decorators import action
 from drf_yasg.utils import swagger_auto_schema
@@ -37,21 +36,29 @@ class UpdateTrxMixin:
     def update_transaction(self, request, *args, **kwargs):
         instance = self.get_object()
         trx_hash = self.get_trx_hash(request)
-        try:
-            self.validate_hash(instance, trx_hash)
-            instance.set_input_transaction_hash(trx_hash=trx_hash)
-            instance.request_update()
-            serializer = self.get_serializer(instance)
-            return Response(serializer.data)
-        except ValidationError as exc:
-            return Response(data={'error': exc.detail})
+        self.validate_hash(instance, trx_hash)
+        instance.set_input_transaction_hash(trx_hash=trx_hash)
+        instance.request_update()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
 
-    def get_trx_hash(self, request):
+    def get_trx_hash(self, request) -> str:
+        """
+        Check hash is not exists in database
+        :return: trx_hash
+        """
         serializer = self.additional_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         return serializer.data['trx_hash']
 
-    def validate_hash(self, instance: ExchangeHistory, trx_hash):
+    @staticmethod
+    def validate_hash(instance: ExchangeHistory, trx_hash) -> typing.NoReturn:
+        """
+        Validate hash in blockchain
+
+        :param instance: ExchangeHistory object
+        :param trx_hash: transaction hash
+        """
         currency_slug = instance.transaction_input.currency.slug
         to_address = instance.transaction_input.to_address
         input_trx = instance.transaction_input

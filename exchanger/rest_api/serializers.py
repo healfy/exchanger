@@ -132,18 +132,6 @@ class ExchangeHistorySerializer(serializers.ModelSerializer,
         except ObjectDoesNotExist as e:
             raise serializers.ValidationError(e)
 
-    def bgw_validate_addresses(self, data: dict) -> dict:
-        attrs = ['from', 'to']
-        for attr in attrs:
-            resp = bgw_service_gw.check_address(**self.get_attrs(
-                data, f'{attr}_address', f'{attr}_currency'))
-
-            if not resp.get('isinstance'):
-                raise serializers.ValidationError(
-                    f'You address {data[f"{attr}_address"]} is not valid'
-                )
-        return data
-
     def validate_ingoing_amount(self, amount):
         if amount <= 0:
             raise serializers.ValidationError(f'Invalid ingoing '
