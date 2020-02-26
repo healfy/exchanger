@@ -1,4 +1,5 @@
 from datetime import timedelta
+from decimal import Decimal
 from unittest.mock import patch
 from uuid import uuid4
 
@@ -15,6 +16,15 @@ from exchanger.models import (
     ExchangeHistory,
     TransactionBase
 )
+
+rates = [
+    {"name": "BTC", "fullname": "Bitcoin", "slug": "bitcoin",
+     "rate": "9183.84000000", },
+    {"name": "ETH", "fullname": "Ethereum", "slug": "ethereum",
+     "rate": "240.36000000", },
+    {"name": "BNB", "fullname": "Binance Coin", "slug": "binance-coin",
+     "rate": "19.48540000", }
+]
 
 
 class TestBase(TestCase):
@@ -150,7 +160,6 @@ class TestExchangerApi(TestBase):
         self.assertEqual(obj.state, states.WaitingHashState)
         self.assertEqual(obj.fee, settings.EXTENDED_FEE)
 
- #   @patch.object(wallets_service_gw, '_base_request', return_value={})
     def test_create_exchanger_token_1(self, *args):
         self.data.update({
             'from_currency': self.token_in.slug,
@@ -354,7 +363,7 @@ class TestStates(TestBase):
                 data={'trx_hash': _hash}
             )
 
-        self.assertEqual(200,  resp.status_code)
+        self.assertEqual(200, resp.status_code)
         self.exchanger.refresh_from_db()
         self.assertEqual(self.exchanger.transaction_input.trx_hash, _hash)
 
@@ -621,3 +630,53 @@ class TestStates(TestBase):
             stop_status=ExchangeHistory.FAILED)
         self.exchanger.refresh_from_db()
         self.assertEqual(self.exchanger.state, states.FailedState)
+
+    @patch.object(wallets_service_gw, '_base_request', return_value={})
+    @patch.object(states.WaitingDepositState, 'validate_value',
+                  return_value=True)
+    @patch.object(states.CalculatingState.gw, 'get_currencies',
+                  return_value=rates)
+    def test_insufficient_payment(self, *args):
+        self.update_obj(2)
+        self.exchanger.status = ExchangeHistory.DEPOSIT_PAID
+        self.exchanger.save()
+        self.exchanger.refresh_from_db()
+        trx = self.exchanger.transaction_input
+        old_value = trx.value
+        old_out_value = self.exchanger.outgoing_amount
+        trx.trx_hash = uuid4()
+        trx.status = TransactionBase.CONFIRMED
+        trx.value = self.exchanger.ingoing_amount - Decimal(0.28)
+        trx.save()
+        self.exchanger.request_update(stop_status=ExchangeHistory.CALCULATING)
+        self.exchanger.refresh_from_db()
+        self.assertEqual(self.exchanger.state, states.CalculatingState)
+        self.assertNotEqual(old_value, self.exchanger.ingoing_amount)
+        self.assertNotEqual(old_out_value, self.exchanger.outgoing_amount)
+        self.assertAlmostEqual(self.exchanger.ingoing_amount, trx.value,
+                               delta=0.01)
+
+    @patch.object(wallets_service_gw, '_base_request', return_value={})
+    @patch.object(states.WaitingDepositState, 'validate_value',
+                  return_value=True)
+    @patch.object(states.CalculatingState.gw, 'get_currencies',
+                  return_value=rates)
+    def test_overpayment(self, *args):
+        self.update_obj(2)
+        self.exchanger.status = ExchangeHistory.DEPOSIT_PAID
+        self.exchanger.save()
+        self.exchanger.refresh_from_db()
+        trx = self.exchanger.transaction_input
+        old_value = trx.value
+        old_out_value = self.exchanger.outgoing_amount
+        trx.trx_hash = uuid4()
+        trx.status = TransactionBase.CONFIRMED
+        trx.value = self.exchanger.ingoing_amount + Decimal(0.28)
+        trx.save()
+        self.exchanger.request_update(stop_status=ExchangeHistory.CALCULATING)
+        self.exchanger.refresh_from_db()
+        self.assertEqual(self.exchanger.state, states.CalculatingState)
+        self.assertGreater(self.exchanger.ingoing_amount, old_value)
+        self.assertGreater(self.exchanger.outgoing_amount, old_out_value)
+        self.assertAlmostEqual(self.exchanger.ingoing_amount, trx.value,
+                               delta=0.01)

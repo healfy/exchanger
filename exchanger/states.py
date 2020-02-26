@@ -229,6 +229,7 @@ class ValidateInputTransactionMixin:
             exchange_object.fee = fee
             exchange_object.outgoing_amount = cls.calc_outgoing_amount(
                 usd_value, rates, fee, exchange_object.to_currency.slug)
+            exchange_object.ingoing_amount = input_transaction.value
 
     @classmethod
     def calc_outgoing_amount(
