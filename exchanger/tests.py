@@ -5,11 +5,14 @@ from uuid import uuid4
 
 from django.conf import settings
 from django.test import TestCase
+from google.api import context_pb2
 from rest_framework.test import APIClient
 
 from exchanger import states
 from exchanger.gateway import wallets_service_gw
 from exchanger.rest_api.views import bgw_service_gw
+from exchanger.rpc import exchanger_pb2
+from exchanger.gateway.grpc_server import ExchangerService
 from exchanger.models import (
     Currency,
     PlatformWallet,
@@ -680,3 +683,60 @@ class TestStates(TestBase):
         self.assertGreater(self.exchanger.outgoing_amount, old_out_value)
         self.assertAlmostEqual(self.exchanger.ingoing_amount, trx.value,
                                delta=0.01)
+
+
+class TestServerGRPC(TestBase):
+
+    def setUp(self) -> None:
+        super(TestServerGRPC, self).setUp()
+        self.exchanger_object = ExchangeHistory.objects.create(
+            from_currency=self.btc_wallet.currency,
+            to_currency=self.eth_wallet.currency,
+            ingoing_amount=1,
+            outgoing_amount=0.92,
+            from_address=uuid4(),
+            to_address=uuid4(),
+            user_email='test@mail.com',
+            fee=settings.DEFAULT_FEE,
+        )
+        self.exchanger_object.request_update(
+            stop_status=states.WaitingHashState)
+
+    def test_update_input_trx(self, *args):
+        trx = self.exchanger_object.transaction_input
+        trx.trx_hash = uuid4()
+        trx.save()
+        self.exchanger_object.status = ExchangeHistory.WAITING_DEPOSIT
+        self.exchanger_object.save()
+        self.exchanger_object.refresh_from_db()
+        message = exchanger_pb2.UpdateRequest(
+            transactions=[exchanger_pb2.TransactionData(
+                uuid=str(trx.uuid),
+                trx_hash=str(trx.trx_hash),
+                value=str(trx.value)
+            )]
+        )
+        result = ExchangerService().UpdateInputTransaction(
+            message, context_pb2.Context)
+        self.assertEqual(exchanger_pb2.SUCCESS, result.header.status)
+
+    def test_update_input_trx_another_value(self, *args):
+        trx = self.exchanger_object.transaction_input
+        trx.trx_hash = uuid4()
+        trx.save()
+        self.exchanger_object.status = ExchangeHistory.WAITING_DEPOSIT
+        self.exchanger_object.save()
+        self.exchanger_object.refresh_from_db()
+        new_value = trx.value - Decimal('0.21')
+        message = exchanger_pb2.UpdateRequest(
+            transactions=[exchanger_pb2.TransactionData(
+                uuid=str(trx.uuid),
+                trx_hash=str(trx.trx_hash),
+                value=str(new_value)
+            )]
+        )
+        result = ExchangerService().UpdateInputTransaction(
+            message, context_pb2.Context)
+        trx.refresh_from_db()
+        self.assertEqual(exchanger_pb2.SUCCESS, result.header.status)
+        self.assertEqual(trx.value, new_value)

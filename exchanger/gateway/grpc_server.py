@@ -4,6 +4,7 @@ from datetime import datetime
 from concurrent import futures
 from contextlib import contextmanager
 from django.conf import settings
+from google.api import context_pb2
 from google.protobuf.json_format import MessageToDict
 from .base import BaseRepr
 from .serializers import TransactionDataSerializer
@@ -61,7 +62,8 @@ class UpdateMixin:
     def _execute(self, request, ingoing=False):
         data = self.validate_request(request)
         self.action(data, ingoing=ingoing)
-        self.update_exchanger_objects(data, ingoing=ingoing)
+        if not settings.TEST_MODE:
+            self.update_exchanger_objects(data, ingoing=ingoing)
 
     def update_exchanger_objects(self, data, ingoing=False):
         model = self.input_model if ingoing else self.output_model
@@ -80,10 +82,10 @@ class ExchangerService(exchanger_pb2_grpc.ExchangerServiceServicer,
         message.header.status = exchanger_pb2.SUCCESS
         return message
 
-    def UpdateInputTransaction(self, request, context):
+    def UpdateInputTransaction(self, request, context: context_pb2.Context):
         return self.process(request, ingoing=True)
 
-    def UpdateOutputTransaction(self, request, context):
+    def UpdateOutputTransaction(self, request, context: context_pb2.Context):
         return self.process(request)
 
 
