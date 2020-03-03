@@ -191,7 +191,7 @@ USE_TZ = False
 STATIC_URL = '/static/'
 STATIC_ROOT = '/tmp/exchanger-static'
 
-LOGFILE = os.path.join(os.environ.get('LOGFILE_PATH', ''), 'exchanger.log')
+LOGFILE = os.path.join(os.environ.get('LOGFILE', ''), 'exchanger.log')
 
 LOGGING = {
     'version': 1,
