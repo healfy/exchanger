@@ -67,9 +67,11 @@ class BlockChainServiceGateway(BaseGateway):
             client = self.ServiceStub(channel)
             response_data = self._base_request(
                 request_message, client.GetTransaction,
-                extend_statutes=(blockchain_gateway_pb2.PENDING,))
+                extend_statutes=(blockchain_gateway_pb2.PENDING,
+                                 blockchain_gateway_pb2.NOT_FOUND))
 
             data = response_data['transaction']
+            data['status'] = response_data[self.response_attr]['status']
 
             serializer = BGWTransactionSerializer(data=data, instance=instance)
 

@@ -359,7 +359,9 @@ class TestStates(TestBase):
                         'hash': _hash,
                         'currencySlug': trx.currency.slug,
                         'value': trx.value,
-                        'time': time}}
+                        'time': time},
+                'status': {'status': 'SUCCESS'}
+                }
         ) as mock:
             resp = self.client.post(
                 f'/api/exchange/{self.exchanger.uuid}/update_transaction/',
@@ -390,7 +392,9 @@ class TestStates(TestBase):
                         'hash': _hash,
                         'currencySlug': trx.currency.slug,
                         'value': str(trx.value),
-                        'time': time}}
+                        'time': time},
+                'status': {'status': 'SUCCESS'}
+                },
         ) as mock:
             self.client.post(
                 f'/api/exchange/{self.exchanger.uuid}/update_transaction/',
@@ -426,7 +430,41 @@ class TestStates(TestBase):
                         'hash': _hash,
                         'currencySlug': trx.currency.slug,
                         'value': str(trx.value),
-                        'time': time}}
+                        'time': time},
+                    'status': {'status': 'SUCCESS'}
+                }
+        ) as mock:
+            resp = self.client.post(
+                f'/api/exchange/{self.exchanger.uuid}/update_transaction/',
+                data={'trx_hash': _hash}
+            )
+        self.assertEqual(resp.status_code, 400)
+
+    @patch.object(wallets_service_gw, '_base_request', return_value={})
+    def test_invalid_bgw_status(self, *args):
+        self.exchanger.request_update(stop_status=ExchangeHistory.WAITING_HASH)
+        self.exchanger.refresh_from_db()
+        self.assertEqual(self.exchanger.state, states.WaitingHashState)
+        self.assertIsNone(self.exchanger.transaction_input.trx_hash)
+        trx = self.exchanger.transaction_input
+        _hash = str(uuid4())
+        time = int(
+            (self.exchanger.created_at - timedelta(minutes=10)).timestamp()
+        )
+
+        with patch.object(
+                bgw_service_gw,
+                '_base_request',
+                return_value={
+                    'transaction': {
+                        'from': trx.from_address,
+                        'to': trx.to_address,
+                        'hash': _hash,
+                        'currencySlug': trx.currency.slug,
+                        'value': str(trx.value),
+                        'time': time},
+                    'status': {'status': 'NOT_FOUND'}
+                }
         ) as mock:
             resp = self.client.post(
                 f'/api/exchange/{self.exchanger.uuid}/update_transaction/',
