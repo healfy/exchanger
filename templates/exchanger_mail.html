@@ -114,12 +114,12 @@
             <p class="info"
                style="-ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; color: #fff; margin-bottom: 40px;">
                 This email was sent automatically by Bonum Platform in response
-                to your request to confirm your email address.
-                Click the button to confirm your email address.
+                to your request to exchange.
+                Click the button to see exchange status.
             </p>
 
             <a class="btn"
-               href="{{ protocol }}://{{ default_host }}/exchanger/{{ id }}"
+               href="{{ protocol }}://{{ default_host }}/exchanger/{{ uuid }}"
                style="-ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; background: #009cff; border: 2px solid #009cff; border-radius: 30px; box-sizing: border-box; color: #fff; cursor: pointer; font-size: 14px; font-weight: bold; margin-bottom: 32px; padding: 15px 30px;">
                 Go to exchange information
             </a>
@@ -128,9 +128,9 @@
                style="-ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; color: #fff !important; font-family: 'Ubuntu', sans-serif; font-size: 12px; font-style: normal; font-weight: normal; line-height: 18px; margin-bottom: 60px; margin-top: 40px;">
                 Or open link:<br>
                 <a class="link"
-                   href="{{ protocol }}://{{ default_host }}/exchanger/{{ id }}"
+                   href="{{ protocol }}://{{ default_host }}/exchanger/{{ uuid }}"
                    style="-ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; color: #fff !important;">
-                    {{ protocol }}://{{ default_host }}/exchanger/{{ id }}
+                    {{ protocol }}://{{ default_host }}/exchanger/{{ uuid }}
                 </a>
 
             </p>

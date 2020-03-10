@@ -360,6 +360,7 @@ class NewState(State,
             from_address=exchange_object.from_address,
             currency=exchange_object.from_currency
         )
+        utils.send_mail_to_user(exchange_object)
         logger.info(f'Created new exchange operation with params: \n'
                     f'{exchange_object.to_info_message}')
         return super().set(exchange_object)
@@ -550,31 +551,6 @@ class ClosedState(State):
     Final state in successfully direction
     """
     id = models.ExchangeHistory.CLOSED
-
-    def send_email(self, exchanger_object: models.ExchangeHistory):
-
-        use_https = settings.DEFAULT_HOST == 'app.bonumchain.com'
-
-        context = {
-            'default_host': settings.DEFAULT_HOST,
-            'protocol': 'https' if use_https else 'http',
-        }
-        context.update(exchanger_object.to_info_message)
-
-        try:
-            send_mail(
-                'Report for exchanger operation',
-                '',
-                settings.DEFAULT_FROM_EMAIL,
-                [exchanger_object.user_email],
-                html_message=render_to_string(
-                    'exchanger_mail.html', context),
-            )
-        except Exception as e:
-            logger.critical(f'send  email to '
-                            f'{exchanger_object.user_email} failed {e}')
-            return False
-        return True
 
 
 class OutgoingRunningState(ConfirmTransactionMixin,

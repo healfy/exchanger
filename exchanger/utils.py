@@ -1,10 +1,15 @@
 import sys
 import warnings
+import logging
+import typing
 from functools import wraps
+
+from django.core.mail import send_mail
 from django.db import transaction
 from decimal import Decimal
 from decimal import ROUND_HALF_UP
 from django.conf import settings
+from django.template.loader import render_to_string
 
 
 def nested_commit_on_success(func):
@@ -63,3 +68,28 @@ def all_kwargs_required(func):
                                  f'function "{func.__name__}" is required')
         return func(*args, **kwargs)
     return _wrapper
+
+
+def send_mail_to_user(exchanger):
+
+    use_https = settings.DEFAULT_HOST == 'app.bonumchain.com'
+    send_to = exchanger.user_email
+    context = {
+        'default_host': settings.DEFAULT_HOST,
+        'uuid': exchanger.uuid,
+        'protocol': 'https' if use_https else 'http',
+        'email': send_to
+    }
+
+    try:
+        send_mail(
+            'New exchange operation is created',
+            '',
+            settings.DEFAULT_FROM_EMAIL,
+            [send_to],
+            html_message=render_to_string(
+                'exchanger_mail.html', context),
+        )
+    except Exception as e:
+        logger = logging.getLogger('exchanger')
+        logger.error(f'send email to {send_to} failed {e}')
