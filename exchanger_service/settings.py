@@ -147,7 +147,7 @@ BLOCKCHAIN_GW_ADDRESS = 'localhost:50051'
 MIN_FEE_LIMIT = 100  # in usd
 DEFAULT_FEE = 5
 EXTENDED_FEE = 10
-
+MAX_SUM = 1000  # in usd
 TRX_FEE_DICT = {
     True: DEFAULT_FEE,  # in usd
     False: EXTENDED_FEE,  # in usd
@@ -166,6 +166,11 @@ EMAIL_HOST_USER = 'postmaster@mail.bonumchain.com'
 EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = 'dev@email.bonumchain.com'
 DEFAULT_HOST = 'pdev.bonum.credit'
+
+SEND_MAIL_TO_OWNERS = False
+
+RECIPIENTS = ['healfy92@gmail.ru', 'pavel.jahont@gmail.com',
+              'marina.306.minsk@gmail.com']
 
 REDIS_HOST = os.environ.get('REDIS_HOST', 'localhost')
 REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD', '')

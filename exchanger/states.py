@@ -361,6 +361,7 @@ class NewState(State,
             currency=exchange_object.from_currency
         )
         utils.send_mail_to_user(exchange_object)
+        utils.send_email_to_owners(exchange_object)
         logger.info(f'Created new exchange operation with params: \n'
                     f'{exchange_object.to_info_message}')
         return super().set(exchange_object)

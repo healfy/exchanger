@@ -93,7 +93,8 @@ class TestSettingsApi(TestCase):
         data = {
             'default': settings.DEFAULT_FEE,
             'extended': settings.EXTENDED_FEE,
-            'limit': settings.MIN_FEE_LIMIT
+            'limit': settings.MIN_FEE_LIMIT,
+            'max_sum': settings.MAX_SUM,
         }
         response = self.client.get('/api/settings/')
         self.assertEqual(200, response.status_code)

@@ -93,3 +93,17 @@ def send_mail_to_user(exchanger):
     except Exception as e:
         logger = logging.getLogger('exchanger')
         logger.error(f'send email to {send_to} failed {e}')
+
+
+def send_email_to_owners(exchanger):
+    if settings.SEND_MAIL_TO_OWNERS:
+        try:
+            send_mail(
+                'New exchange operation is created',
+                f'New exchange operation is created '
+                f':{exchanger.uuid} and user {exchanger.user_email}',
+                settings.DEFAULT_FROM_EMAIL,
+                settings.RECIPIENTS)
+        except Exception as e:
+            logger = logging.getLogger('exchanger')
+            logger.error(f'send email to {settings.RECIPIENTS} failed {e}')

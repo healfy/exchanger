@@ -399,7 +399,7 @@ class ExchangeHistory(Base):
                                                  **params)
 
     def __str__(self):
-        return f'Exchange history id: {self.id} bound with user' \
+        return f'Exchange history id: {self.uuid} bound with user' \
                f' {self.user_email}'
 
     @classmethod
