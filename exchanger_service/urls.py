@@ -55,4 +55,6 @@ urlpatterns = [
     path('api/', include('rest_framework.urls', namespace='rest_framework')),
     path('api/currency/', views.CurrencyServiceView.as_view()),
     path('api/settings/', views.SettingsView.as_view()),
+    url('', include('django_prometheus.urls')),
+
 ]

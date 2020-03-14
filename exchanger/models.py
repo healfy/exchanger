@@ -2,6 +2,7 @@ import uuid
 import typing
 from datetime import datetime
 from django.db import models
+from django_prometheus.models import ExportModelOperationsMixin
 from .managers import BaseManager
 from .managers import CurrencyManager
 from .utils import nested_commit_on_success
@@ -50,7 +51,7 @@ class Base(models.Model):
         ordering = ('-created_at',)
 
 
-class Currency(Base):
+class Currency(ExportModelOperationsMixin('Currency'), Base):
 
     name = models.CharField(verbose_name='Currency name',
                             max_length=50)
@@ -148,7 +149,8 @@ class TransactionBase(Base):
         abstract = True
 
 
-class InputTransaction(TransactionBase):
+class InputTransaction(ExportModelOperationsMixin('InputTransaction'),
+                       TransactionBase):
 
     class Meta:
         verbose_name = 'Input Transaction'
@@ -158,7 +160,8 @@ class InputTransaction(TransactionBase):
         return f'InputTransaction ({self.id}, {self.currency})'
 
 
-class OutPutTransaction(TransactionBase):
+class OutPutTransaction(ExportModelOperationsMixin('OutPutTransaction'),
+                        TransactionBase):
 
     class Meta:
         verbose_name = 'OutPut Transaction'
@@ -177,7 +180,7 @@ class OutPutTransaction(TransactionBase):
         }
 
 
-class PlatformWallet(Base):
+class PlatformWallet(ExportModelOperationsMixin('PlatformWallet'), Base):
 
     address = models.CharField(verbose_name='Wallet address',
                                max_length=100,
@@ -203,7 +206,7 @@ class PlatformWallet(Base):
         verbose_name_plural = 'Platform Wallets'
 
 
-class ExchangeHistory(Base):
+class ExchangeHistory(ExportModelOperationsMixin('ExchangeHistory'), Base):
     """
     Scenario of funds exchange operation development
 
