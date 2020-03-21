@@ -10,6 +10,7 @@ from rest_framework.test import APIClient
 
 from exchanger import states
 from exchanger.gateway import wallets_service_gw
+from exchanger.rest_api.serializers import ExternalServicesValidatorMixin
 from exchanger.rest_api.views import bgw_service_gw
 from exchanger.rpc import exchanger_pb2
 from exchanger.gateway.grpc_server import ExchangerService
@@ -300,6 +301,31 @@ class TestExchangerApi(TestBase):
         resp = self.client.post('/api/exchange/', data=self.data)
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(resp.json()['ingoing_amount'], exc_text)
+
+    @patch.object(ExternalServicesValidatorMixin.b_gw, 'check_address',
+                  return_value={'isinstance': True})
+    @patch.object(ExternalServicesValidatorMixin.currencies, 'get_currencies',
+                  return_value=rates)
+    def test_overpayment_ingoing_amount(self, *args):
+        settings.TEST_MODE = False
+        error = {
+            'non_field_errors':
+                [f"[ErrorDetail(string='Max input value is {settings.MAX_SUM}', "
+                 "code='invalid')]"]}
+
+        self.data = {
+            'from_currency': self.eth_wallet.currency.slug,
+            'to_currency': self.btc_wallet.currency.slug,
+            'ingoing_amount': '7.6923',
+            'outgoing_amount': '0.162847',
+            'user_email': self.email,
+            'from_address': str(self.from_address),
+            'to_address': str(self.to_address),
+            'fee': settings.DEFAULT_FEE,
+        }
+        resp = self.client.post('/api/exchange/', data=self.data)
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.json(), error)
 
 
 class TestStates(TestBase):
