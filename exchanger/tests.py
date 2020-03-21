@@ -95,6 +95,7 @@ class TestSettingsApi(TestCase):
             'extended': settings.EXTENDED_FEE,
             'limit': settings.MIN_FEE_LIMIT,
             'max_sum': settings.MAX_SUM,
+            'delta': settings.DELTA,
         }
         response = self.client.get('/api/settings/')
         self.assertEqual(200, response.status_code)

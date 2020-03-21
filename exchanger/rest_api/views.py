@@ -142,5 +142,6 @@ class SettingsView(APIView):
             'extended': settings.EXTENDED_FEE,
             'limit': settings.MIN_FEE_LIMIT,
             'max_sum': settings.MAX_SUM,
+            'delta': settings.DELTA,
                               }).initial_data
         return Response(data)

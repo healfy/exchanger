@@ -65,6 +65,11 @@ class ExternalServicesValidatorMixin:
         usd_value_from = quantize(
             Decimal(current_rate_from * Decimal(data['ingoing_amount'])))
 
+        if usd_value_from > settings.MAX_SUM:
+            raise serializers.ValidationError(
+                f'Max input value is {settings.MAX_SUM}'
+            )
+
         usd_fee = calculate_fee(usd_value_from, data_rates, output_slug)
         if usd_value_from - usd_fee <= 0:
             raise serializers.ValidationError(
@@ -76,10 +81,6 @@ class ExternalServicesValidatorMixin:
         data['issue_rate_to'] = current_rate_to
         data['outgoing_amount'] = quantize(
             Decimal((usd_value_from - usd_fee) / current_rate_to))
-        if (usd_value_from - usd_fee) > settings.MAX_SUM:
-            raise serializers.ValidationError(
-                f'Max output value is {settings.MAX_SUM}'
-            )
         return data
 
 
@@ -169,6 +170,7 @@ class SettingsSerializer(serializers.Serializer):
     extended = serializers.IntegerField()
     limit = serializers.IntegerField()
     max_sum = serializers.IntegerField()
+    delta = serializers.IntegerField()
 
 
 class TrxHashSerializer(serializers.Serializer):
