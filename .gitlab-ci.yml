@@ -1,0 +1,31 @@
+image: registry.gitlab.com/bonum/images/python3-base
+
+stages:
+  - test
+
+variables:
+  POSTGRES_DB: postgres
+  PGDATABASE: postgres
+  POSTGRES_USER: postgres
+  PGUSER: postgres
+  POSTGRES_PASSWORD: testing-password
+  PGPASSWORD: testing-password,
+  POSTGRES_ENABLED: "true"
+
+py.test:
+  stage: test
+  variables:
+    REDIS_HOST: redis
+    PGPASSWORD: testing-password
+    PGUSER: postgres
+    PGHOST: postgres
+  services:
+    - postgres:9.6
+    - redis
+  script:
+    - pip install -r requirements.txt
+    - pytest -v exchanger
+  only:
+    - master
+    - dev
+    - stage
