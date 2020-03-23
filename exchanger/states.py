@@ -5,8 +5,6 @@ from decimal import Decimal
 from decimal import ROUND_HALF_UP
 
 from django.conf import settings
-from django.core.mail import send_mail
-from django.template.loader import render_to_string
 
 from exchanger import models
 from exchanger import utils
@@ -226,7 +224,14 @@ class ValidateInputTransactionMixin:
             usd_value = (Decimal(rates.get(slug)) * input_transaction.value
                          ).quantize(Decimal('0.001'), rounding=ROUND_HALF_UP)
             fee = utils.calculate_fee(usd_value, rates, slug)
-            exchange_object.fee = fee
+
+            current_rate_from = Decimal(
+                rates.get(exchange_object.to_currency.slug)
+            )
+            exchange_object.fee = utils.quantize(
+                Decimal(fee / current_rate_from)
+            )
+
             exchange_object.outgoing_amount = cls.calc_outgoing_amount(
                 usd_value, rates, fee, exchange_object.to_currency.slug)
             exchange_object.ingoing_amount = input_transaction.value
