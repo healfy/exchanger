@@ -56,6 +56,9 @@ class State(BaseRepr, ABC):
         cls.validate(exchange_object)
         exchange_object.status = cls.id
         exchange_object.save()
+        # for seek error
+        logger.info(f'{cls.__name__} Exchange object {exchange_object.uuid} has'
+                    f'fee {exchange_object.fee}')
         return exchange_object.state
 
     @classmethod
@@ -199,17 +202,6 @@ class ValidateInputTransactionMixin:
 
     gw: CurrenciesServiceGateway
 
-    # noinspection PyUnresolvedReferences
-    @classmethod
-    def set(
-            cls,
-            exchange_object: models.ExchangeHistory,
-            **params
-    ) -> typing.Type['State']:
-
-        cls.validate(exchange_object)
-        return super().set(exchange_object, **params)
-
     @classmethod
     def validate(
             cls,
@@ -225,12 +217,14 @@ class ValidateInputTransactionMixin:
                          ).quantize(Decimal('0.001'), rounding=ROUND_HALF_UP)
             fee = utils.calculate_fee(usd_value, rates, slug)
 
-            current_rate_from = Decimal(
+            current_rate_to = Decimal(
                 rates.get(exchange_object.to_currency.slug)
             )
             exchange_object.fee = utils.quantize(
-                Decimal(fee / current_rate_from)
+                Decimal(fee / current_rate_to)
             )
+            exchange_object.issue_rate_to = current_rate_to
+            exchange_object.issue_rate_from = Decimal(rates.get(slug))
 
             exchange_object.outgoing_amount = cls.calc_outgoing_amount(
                 usd_value, rates, fee, exchange_object.to_currency.slug)
@@ -541,6 +535,16 @@ class CalculatingState(ValidateInputTransactionMixin,
     """
     id = models.ExchangeHistory.CALCULATING
     gw = currency_service_gw
+
+    @classmethod
+    def set(
+            cls,
+            exchange_object: models.ExchangeHistory,
+            **params
+    ) -> typing.Type['State']:
+
+        cls.validate(exchange_object)
+        return super().set(exchange_object, **params)
 
     @classmethod
     def _inner_transition(
