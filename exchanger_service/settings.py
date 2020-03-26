@@ -153,8 +153,8 @@ DELTA = 5
 EXTENDED_FEE = 10
 MAX_SUM = 1000  # in usd
 TRX_FEE_DICT = {
-    True: DEFAULT_FEE,  # in usd
-    False: EXTENDED_FEE,  # in usd
+    True: EXTENDED_FEE,  # in usd
+    False: DEFAULT_FEE,  # in usd
 }
 
 ETH_ADDRESS = os.getenv('EXCHANGER_ETH_ADDRESS', '0xF6E4709341426Dee13c9e9EaB6e4779b299CE2F7')

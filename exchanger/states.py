@@ -221,7 +221,7 @@ class ValidateInputTransactionMixin:
                 rates.get(exchange_object.to_currency.slug)
             )
             exchange_object.fee = utils.quantize(
-                Decimal(fee / current_rate_to)
+                Decimal(fee / Decimal(rates.get(slug)))
             )
             exchange_object.issue_rate_to = current_rate_to
             exchange_object.issue_rate_from = Decimal(rates.get(slug))
